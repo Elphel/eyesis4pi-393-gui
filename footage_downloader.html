@@ -1,0 +1,42 @@
+<html>
+  <head>
+    <title>Footage Downloader</title>
+
+    <link rel="shortcut icon" href="favicon.ico" />
+
+    <script src="jquery-1.7.2.min.js" type="text/javascript"></script>
+    <script src="jquery-ui-1.8.18.custom/js/jquery-ui-1.8.18.custom.min.js" type="text/javascript"></script>
+    <link rel="stylesheet" type="text/css" href="jquery-ui-1.8.18.custom/css/ui-lightness/jquery-ui-1.8.18.custom.css" />
+
+    <script src="footage_downloader.js" type="text/javascript"></script>
+    <link href="footage_downloader.css" rel="stylesheet" type="text/css"/>
+    
+    <link rel="stylesheet" type="text/css" href="button.css" />
+    <link rel="stylesheet" type="text/css" href="index.css" />
+
+  </head>
+  <body>
+      <table style="background:rgba(200,200,200,0.5);">
+      <tr>
+	  <td><b>Destination</b></td>
+      </tr>
+      <tr>
+	  <td>Path:</td>
+	  <td><input type="text" id="path" style="width:200px;" value="/data/footage"></td>
+      </tr>
+      <tr>
+	  <td>Directory:</td>
+	  <td><input type="text" id="dir" style="width:200px;" value="20130517_test"></td>
+      </tr>
+      <tr>
+	  <td colspan="2"><button id="rec" onclick="footage_download()">Download</button></td>
+      </tr>
+      </table>
+      <table>
+      <tr>
+	  <td>Status:</td>
+	  <td></td>
+      </tr>
+      </table>      
+  </body>
+</html>

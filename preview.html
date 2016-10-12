@@ -1,0 +1,82 @@
+<html>
+<head>
+    <script src="jquery-1.7.2.min.js" type="text/javascript"></script>
+
+    <script>
+
+	var baseWidth = 2592;
+	var baseHeight = 1948;
+
+// 	var baseWidth = 400;
+// 	var baseHeight = 300;
+
+	var cnv;
+	var cContext;
+
+	function init(){
+	    cnv = document.getElementById('canvas');
+	    cContext = cnv.getContext('2d');
+	    refresh_images();
+	}
+
+	function refresh_images(){
+	  var d = new Date();
+	  var curr_time = d.getTime();
+
+	  var pic = new Object();
+	  
+	  cnv.setAttribute('width',baseHeight*8);cnv.setAttribute('height',baseWidth*3);
+
+	  //cContext.save();
+
+	  for(i=0;i<8;i++) {
+	    pic[i] = new Image();
+	    //add ip increment here
+	    pic[i].src="http://192.168.0.22"+(i+1)+":8081/bimg?"+curr_time;
+	    pic[i].index = i;
+
+	    pic[i].onload = function(){
+
+	      //cContext.restore();
+
+	      cContext.rotate(90*Math.PI/180);
+	      
+	      var k = 3;
+	      
+	      if ((this.index==0)||(this.index==1)||(this.index==7)) k = 3;
+	      
+	      if (this.index%2==0) {
+		  //cContext.drawImage(this,  0,-baseHeight,baseWidth,baseHeight*k);
+		  cContext.drawImage(this, 0, 0*baseHeight, baseWidth, baseHeight,  0*baseWidth, -baseHeight*(1+this.index), baseWidth, baseHeight);
+		  cContext.drawImage(this, 0, 1*baseHeight, baseWidth, baseHeight,  1*baseWidth, -baseHeight*(1+this.index), baseWidth, baseHeight);
+		  //for those who has 3 images
+		  if (k==3) {
+		      cContext.scale(-1,1);
+		      cContext.drawImage(this, 0, 2*baseHeight, baseWidth, baseHeight, -3*baseWidth, -baseHeight*(1+this.index), baseWidth, baseHeight);
+		      cContext.scale(-1,1);
+		  }
+		  cContext.rotate(-90*Math.PI/180);
+	      }else{
+ 		  cContext.scale(1,-1); //mirror is needed
+		  cContext.drawImage(this, 0, 0*baseHeight, baseWidth, baseHeight,  0*baseWidth, baseHeight*(this.index), baseWidth, baseHeight);
+		  cContext.drawImage(this, 0, 1*baseHeight, baseWidth, baseHeight,  1*baseWidth, baseHeight*(this.index), baseWidth, baseHeight);
+		  //for those who has 3 images
+		  if (k==3) {
+		      cContext.scale(-1,1);
+		      cContext.drawImage(this, 0, 2*baseHeight, baseWidth, baseHeight, -3*baseWidth, baseHeight*(this.index), baseWidth, baseHeight);
+		      cContext.scale(-1,1);
+		  }
+ 		  cContext.scale(1,-1); //mirror is needed
+		  cContext.rotate(-90*Math.PI/180);
+	      }      
+	    }
+ 	  }
+	}
+
+    </script>
+
+</head>
+<body onload="init()">
+    <canvas id="canvas" style="background:rgba(100,200,100,0.5);"></canvas>
+</body>
+</html>

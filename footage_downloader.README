@@ -1,0 +1,27 @@
+NOTE:
+1. footage_downloader.html is not ready yet
+
+SET UP INSTRUCTIONS:
+1. Edit /etc/fstab according to the device names given to 2 extra eSATA HDDs connected to the PC.
+/dev/sdc1	/mnt/sdc1	auto	defaults,user,noauto	0	0
+/dev/sdc2       /mnt/sdc2       auto    defaults,user,noauto    0       0
+/dev/sdd1	/mnt/sdd1	auto	defaults,user,noauto	0	0
+/dev/sdd2       /mnt/sdd2       auto    defaults,user,noauto    0       0
+
+
+2. Create /mnt/sdc1 & /mnt/sdd1:
+mkdir /mnt/sdc1;mkdir /mnt/sdc2;
+mkdir /mnt/sdd1;mkdir /mnt/sdd2;
+
+3. If the devices are different, edit the footage_downloader.php.
+
+USAGE:
+1. Run under root
+
+2. In the terminal window:
+sudo php footage_downloader.php /data/footage/<example_folder> <filename.mov>, where
+the <filename.mov> can be a particular file name or "*" (quoted) to download everything:
+
+sudo php footage_downloader.php /data/footage/<example_folder> "*"
+
+3. Switches the Eyesis4Pi IDE multiplexers and downloads the <filename.mov> from all of the SSDs.
