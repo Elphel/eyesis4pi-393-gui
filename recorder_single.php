@@ -2,13 +2,33 @@
 
 include 'filesystem.php';
 
-
-$ip = $_GET['ip'];
-$n  = $_GET['n'];
 $root_path = $_GET['root_path'];
 $subfolder  = $_GET['subfolder'];
+
 $index=0;
 $file_limit = 3000;
+
+$master_ip = "";
+$master_port = "";
+$master_channel = "";
+
+// keys assign
+$cams = array();
+if (isset($_GET['rq'])){
+  $pars = explode(",",$_GET['rq']);
+  foreach($pars as $val){
+    $ip = strtok($val,":");
+    $port = strtok(":");
+    $channel = strtok(":");
+    $master = strtok(":");
+    array_push($cams,array('ip'=>$ip,'port'=>$port,'channel'=>$channel,'master'=>$master));
+    if ($master=="1"){
+        $master_ip = $ip;
+        $master_port = $port;
+        $master_channel = $channel;
+    }
+  }
+}
 
 $path = $root_path."/".$subfolder;
 $error = false;
@@ -28,10 +48,15 @@ if (!is_dir($path)) {
     umask($old);
 }
 
-if ($fp = @simplexml_load_file("http://192.168.0.$ip:8081/trig/pointers")) {
-    $system_status = system("./images.sh $ip $n $path");
-    $fp = fopen("http://192.168.0.$ip/camogmgui/camogm_interface.php?cmd=set_parameter&pname=TRIG_PERIOD&pvalue=192000001", 'r');
-    $fp = fopen("http://192.168.0.$ip/camogmgui/camogm_interface.php?cmd=set_parameter&pname=TRIG_PERIOD&pvalue=192000000", 'r');
+if ($fp = simplexml_load_file("http://$master_ip:$master_port/trig/pointers")) {
+    //$system_status = system("./images.sh $ip $n $path");
+    for($i=0;$i<count($cams);$i++){
+        exec("./get_image.sh \"{$cams[$i]['ip']}:{$cams[$i]['port']}/bimg\" \"${path}\" \"${i}.jp4\" > /dev/null 2>&1 &");
+    }
+    
+    //why fopen?
+    $fp = fopen("http://$master_ip/camogmgui/camogm_interface.php?cmd=set_parameter&pname=TRIG_PERIOD&pvalue=192000001&sensor_port=$master_channel", 'r');
+    $fp = fopen("http://$master_ip/camogmgui/camogm_interface.php?cmd=set_parameter&pname=TRIG_PERIOD&pvalue=192000000&sensor_port=$master_channel", 'r');
     //$fp = fopen("http://192.168.0.221:8081/trig/pointers",'r');
     //$fp = fopen("http://192.168.0.221:8081/trig/pointers",'r');
     //$fp = fopen("http://192.168.0.221:8081/trig/pointers",'r');

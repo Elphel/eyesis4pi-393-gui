@@ -44,13 +44,10 @@ if (isset($elp_const["elphel"])) {
 }
 
 //defaults
-$master_ip = 221;
-$n = 1;
 $res_xml = "";
 
-$cams = array();
-
 // keys assign
+$cams = array();
 if (isset($_GET['rq'])){
   $pars = explode(",",$_GET['rq']);
   foreach($pars as $val){

@@ -56,9 +56,11 @@ function camogm_create_table(){
     
     if (camogm_en) {
 	table_html = "<tr>\n\t<td></td>\n\t<td align='center'>SSD free space</td>\n<td>&nbsp;&nbsp;Buffer (important when recording)</td></tr>";
-	for (var i=0;i<n;i++) {
-	  table_html +=  "<tr>\n\t<td>camera "+(i+1)+"</td><td id='cam"+(i+1)+"_hdd' align='right'></td><td><div id='buffer"+(i+1)+"_sum' class='buffer'><div id='buffer"+(i+1)+"' style='width:200px;' class='buffer_free'>free</div></div></td></tr>";
+        
+	for (var i=0;i<cams.length;i++) {
+	  table_html +=  "<tr>\n\t<td>channel "+(i+1)+"</td><td id='cam"+i+"_hdd' align='right'></td><td><div id='buffer"+i+"_sum' class='buffer'><div id='buffer"+i+"' style='width:200px;' class='buffer_free'>free</div></div></td></tr>";
 	}
+	
     }
     $("#hdd_free_space").html(table_html);
     
@@ -110,7 +112,12 @@ function camogm_parse_status(data){
     var buf_used;
     var buf_sum;
     
-    for (var i=0;i<n;i++) {
+    
+    //$(data).find('cam')
+    
+    
+    for (var i=0;i<cams.length;i++) {
+        
 	buf_free = +$(data).find('cam'+(i+1)).find('camogm_state').find('buffer_free').text();
 	buf_used = +$(data).find('cam'+(i+1)).find('camogm_state').find('buffer_used').text();
 	buf_sum = buf_free+buf_used;

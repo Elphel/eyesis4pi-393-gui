@@ -21,7 +21,10 @@ $socket = stream_socket_server("tcp://$address:$port", $errno, $errstr);
 
 $status = "idle";
 
-$ip = 221;
+$master_ip = "";
+$master_port = "";
+$master_channel = "";
+
 $interval = 1000;
 
 $old_status_en = true;
@@ -43,8 +46,20 @@ if (!$socket) {
 
     $cmd = $xml->cmd;
     $interval = $xml->interval;
-    $ip = $xml->ip;
-    $n = $xml->n;
+    
+    $cams = array();
+    foreach($xml->cam as $item){
+        array_push($cams,array('ip'=>($item->ip),'port'=>($item->port),'channel'=>($item->channel),'master'=>($item->master)));
+        if ($item->master=="1"){
+            $master_ip = $item->ip;
+            $master_port = $item->port;
+            $master_channel = $item->channel;
+        }
+    }
+    
+    //$ip = $xml->ip;
+    //$n = $xml->n;
+    
     $mask = $xml->mask;
 
     if ($cmd=="set_path") {
@@ -68,8 +83,10 @@ if (!$socket) {
     if ($cmd=="stop")  {
 	system("killall -9 recorder.php");
 	$ci = $interval*96000;
-	$fp = fopen("http://192.168.0.$ip/camogmgui/camogm_interface.php?cmd=set_parameter&pname=TRIG_PERIOD&pvalue=".($ci+1), 'r');
-	$fp = fopen("http://192.168.0.$ip/camogmgui/camogm_interface.php?cmd=set_parameter&pname=TRIG_PERIOD&pvalue=".($ci), 'r');
+	
+	$fp = fopen("http://$master_ip/camogmgui/camogm_interface.php?sensor_port=$master_channel&cmd=set_parameter&pname=TRIG_PERIOD&pvalue=".($ci+1), 'r');
+	$fp = fopen("http://$master_ip/camogmgui/camogm_interface.php?sensor_port=$master_channel&cmd=set_parameter&pname=TRIG_PERIOD&pvalue=".($ci), 'r');
+	
 	$status = "idle";
     }
 
@@ -105,7 +122,7 @@ if (!$socket) {
 
 	$footage_index = update_subsubdir("$footage_root_path/$footage_subfolder",$footage_index,$footage_file_limit,$index_max=1);
 	if ($footage_index>=0) {
-	    passthru("./recorder.php ".$ip." ".$n." ".$interval." ".$mask." ".$footage_root_path." ".$footage_subfolder." ".$footage_file_limit." ".$footage_index." >> /dev/null 2>&1 &");
+	    passthru("./recorder.php '".get_rq_str($cams)."' $interval $mask $footage_root_path $footage_subfolder $footage_file_limit $footage_index > /dev/null 2>&1 &");
 	}
 
     }
@@ -114,6 +131,15 @@ if (!$socket) {
     $out = "";
   }
   fclose($socket);
+}
+
+function get_rq_str($a){
+    $rq_str = "";
+    for($i=0;$i<count($a);$i++){
+        if ($i!=0) $rq_str .= ",";
+        $rq_str .= "{$a[$i]['ip']}:{$a[$i]['port']}:{$a[$i]['channel']}:{$a[$i]['master']}";
+    }
+    return $rq_str;
 }
 
 ?>

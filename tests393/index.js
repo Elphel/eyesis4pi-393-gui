@@ -69,5 +69,4 @@ function refresh_images_eyesis(){
       
     };
   }
-  
 }

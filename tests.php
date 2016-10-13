@@ -40,34 +40,35 @@ $cmd = "cf_cards";
 // keys assign
 foreach($_GET as $key=>$value) {
 	switch($key) {
-		case "master_ip"       : $master_ip = $value+0; break;
-		case "n"               : $n = $value+0; break;
 		case "temperature"     : $temperature = true; break;
 		case "cmd"             : $cmd = $value; break;
 	}
 }
 
-$pc_time=@getdate();
-
-// calculate cameras ip addresses based on $master_ip & $n - simple increment from the master camera.
-for ($i=0;$i<$n;$i++) {
-	$cam_ip[$i] = "192.168.0.".($master_ip+$i);
+// keys assign
+$cams = array();
+if (isset($_GET['rq'])){
+  $pars = explode(",",$_GET['rq']);
+  foreach($pars as $ip){
+    array_push($cams,array('ip'=>$ip));
+  }
 }
+
+$pc_time=@getdate();
 
 if ($cmd=="cf_cards"){
 
-    $cf_hda1 = @preg_match("/hda1/",$cf_contents);
-    $cf_hdb1 = @preg_match("/hdb1/",$cf_contents);
-
-    for($i=0;$i<$n;$i++) {
-	$cf_contents = @file_get_contents("http://".($cam_ip[$i])."/phpshell.php?command=cat%20/proc/partitions%20|%20grep%20'hd'");
-	$cf_hda1 = @preg_match("/hda1/",$cf_contents);
-	$cf_hdb1 = @preg_match("/hdb1/",$cf_contents);
-	$res_xml .= "\t<cam$i>\n";
-	$res_xml .= "\t\t<ip>".$cam_ip[$i]."</ip>\n";
-	$res_xml .= "\t\t<hda1>$cf_hda1</hda1>\n";
-	$res_xml .= "\t\t<hdb1>$cf_hdb1</hdb1>\n";
-	$res_xml .= "\t</cam$i>\n";
+    for($i=0;$i<count($cams);$i++) {
+	$cf_contents = file_get_contents("http://{$cams[$i]['ip']}/camogm_interface.php?cmd=list_partitions");
+	
+	$cf_sda = preg_match("/sda/",$cf_contents);
+	$cf_sdb = preg_match("/sdb/",$cf_contents);
+	
+	$res_xml .= "\t<cam>\n";
+	$res_xml .= "\t\t<ip>{$cams[$i]['ip']}</ip>\n";
+	$res_xml .= "\t\t<sda>$cf_sda</sda>\n";
+	$res_xml .= "\t\t<sdb>$cf_sdb</sdb>\n";
+	$res_xml .= "\t</cam>\n";
     }
     
     $res_xml = "<Document>\n".$res_xml."</Document>";

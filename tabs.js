@@ -79,12 +79,13 @@ function tab1_init(mode){
 function tab3_init(){
   var c = "<table>\n";
   var tmp = "";
-  for (var i=0;i<(n);i++) {
+  
+  for (var i=0;i<cams.length;i++) {
       //reset tmp
       tmp  = "<tr>\n";
-      tmp += "\t<td><div class='fixed_height'>Camera "+(i+1)+" "+((i==0)?"master":"")+"</div></td>";
-      tmp += "\t<td><div class='fixed_height'><input id='address_field"+(i+1)+"' type='text' style='width:200px;' value='192.168.0."+(+master_ip+i)+"' disabled></div></td>\n";
-      tmp += "\t<td><div id='cam"+(i+1)+"_parameters'></div></td>\n";
+      tmp += "\t<td><div class='fixed_height'>Channel "+(i+1)+"</div></td>";
+      tmp += "\t<td><div class='fixed_height'><input id='address_field"+i+"' type='text' style='width:150px;' value='"+(cams[i].ip)+"' disabled><input id='address_field_chn"+i+"' type='text' style='width:150px;' value='"+(cams[i].channel)+"' disabled></div></td>\n";
+      tmp += "\t<td><div id='cam"+i+"_parameters'></div></td>\n";
       c += tmp;
   }
   c += "</table>";
@@ -97,7 +98,7 @@ function tab3_init(){
 
 function previews_init(){
   
-  console.log("number of previews is "+n);
+  console.log("number of previews is "+cams.length);
   
   var c = $("#previews").html();
   var hist_front = "";
@@ -105,18 +106,18 @@ function previews_init(){
   c += "<div style='padding:2px 5px 2px 5px;width:310px;'><button id='btn_refresh' onclick='refresh_previews()' >refresh</button>&nbsp;(disabled while recording)</div>\n<table id='prevs_images' >\n";
   
   c +="<tr valign=top>\n";
-  for (var i=1;i<(n+1);i++) {
+  for (var i=0;i<cams.length;i++) {
       c += "<td><img id='cam"+i+"_hist' class='histograms' width='150' height='75'></td>";
       hist_front += "<td style='padding:0px;'><img id='cam"+i+"_hist_front' class='histograms' width='70' height='35'></td>";
   }
   c +="</tr>\n<tr valign=top>\n";
-  for (var i=1;i<(n+1);i++) {
+  for (var i=0;i<cams.length;i++) {
       c += "<td><canvas id='cam"+i+"_canvas' class='prevs'></canvas></td>";
   }
   c +="</tr>\n<tr valign=top>\n";
-  for (var i=1;i<(n+1);i++) {
+  for (var i=0;i<cams.length;i++) {
       var extra = "";
-      if (i==9) extra = " (stereo)";
+      //if (i==9) extra = " (stereo)";
       c += "<td align='center'>"+i+extra+"</td>";
   }
   c += "</tr></table>";

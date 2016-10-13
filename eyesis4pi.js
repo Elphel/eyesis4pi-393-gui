@@ -34,18 +34,27 @@ var pc_gps_imu_device_name = "/dev/sda1";
 
 var camogm_rec_delay = 5;
 
-var cams = new Array(
-  Array(1,1,1),
-  Array(1,1,1),
-  Array(1,1,1),
-  Array(1,1,1),
-  Array(1,1,1),
-  Array(1,1,1),
-  Array(1,1,1),
-  Array(1,1,1),
-  Array(1,0,0),
-  Array(1,0,0)
-);
+var cams = [
+  {"ip":"192.168.0.161","port":2326,"channel":3,"master":0},
+  {"ip":"192.168.0.161","port":2325,"channel":2,"master":0},
+  {"ip":"192.168.0.161","port":2323,"channel":0,"master":0},
+  {"ip":"192.168.0.161","port":2324,"channel":1,"master":0},
+  {"ip":"192.168.0.162","port":2326,"channel":3,"master":0},
+  {"ip":"192.168.0.162","port":2325,"channel":2,"master":0},
+  {"ip":"192.168.0.162","port":2323,"channel":0,"master":0},
+  {"ip":"192.168.0.162","port":2324,"channel":1,"master":0},
+  {"ip":"192.168.0.163","port":2325,"channel":2,"master":1},
+  {"ip":"192.168.0.163","port":2326,"channel":3,"master":0}
+];
+
+function get_master_index(){
+    for (var i=0;i<cam.length;i++){
+        if (cams[i].master==1){
+            return i;
+        }
+    }
+    return -1;
+}
 
 function check_footage_path(){
     $.ajax({
@@ -120,13 +129,12 @@ function init(){
       camogm_cmd("run_status",false,camogm_parse_state);
     }
     //master_ip = $("#address_field1").val().substr(-3,3);
-    var tmp = "192.168.0."+master_ip;
+    var tmp = cams[get_master_index()];
     master_ip = tmp.substr(-3,3);
     
-    var param_string="/parsedit.php?title=Parameters&COLOR&AUTOEXP_ON&EXPOS&AUTOEXP_EXP_MAX&AEXP_LEVEL&AEXP_FRACPIX&QUALITY&CORING_INDEX&MULTI_MODE&MULTI_SELECTED&MULTI_FLIPH&MULTI_FLIPV&TRIG&TRIG_PERIOD&HISTWND_RLEFT&HISTWND_RTOP&HISTWND_RWIDTH&HISTWND_RHEIGHT&HDR_DUR&HDR_VEXPOS&EXP_AHEAD'>Parameters page</a>&nbsp";
-    
-    for (var i=0;i<n;i++) {
-	$("#cam"+(i+1)+"_parameters").html("&nbsp<a href='http://192.168.0."+(+master_ip+i)+param_string);
+    for (var i=0;i<cams.length;i++) {
+        var param_string="/parsedit.php?title=Parameters&sensor_port="+cams[i].channel+"&COLOR&AUTOEXP_ON&EXPOS&AUTOEXP_EXP_MAX&AEXP_LEVEL&AEXP_FRACPIX&QUALITY&CORING_INDEX&MULTI_MODE&MULTI_SELECTED&MULTI_FLIPH&MULTI_FLIPV&TRIG&TRIG_PERIOD&HISTWND_RLEFT&HISTWND_RTOP&HISTWND_RWIDTH&HISTWND_RHEIGHT&HDR_DUR&HDR_VEXPOS&EXP_AHEAD'>Parameters page</a>&nbsp";
+        $("#cam"+i+"_parameters").html("&nbsp<a href='http://"+(cams[i].ip)+param_string);
     }
     
     $("#input_skip_frames").attr('title',"Lower 8-bits set the mask, where 1=enabled, 0=disabled (the sequence period is 8 frames). For example, to skip every second frame apply 0x155");
@@ -159,6 +167,7 @@ function init(){
 
     //update_cf_index();
     master_ip_change_init();
+    
     $("#single_shots_div").attr("href","single.html?ip="+master_ip+"&n="+n+"&mode=5"+"&period="+($("#input_trigger_period").val()*96000));
     
     $("#system_tests_div").attr("href","tests.html?master_ip="+master_ip+"&n="+n);
@@ -291,7 +300,7 @@ function send_cmd(cmd){
 	}else{
 	    console.log("Trigger interval is "+download_interval);
 	    $.ajax({
-	      url: "client.php?cmd="+cmd+"&master_ip="+master_ip+"&n="+n+"&interval="+download_interval+"&mask="+mask,
+	      url: "client.php?cmd="+cmd+"&rq="+get_rq_str()+"&interval="+download_interval+"&mask="+mask,
 	      success: function(data){
 		$("#status").html(data);
 		$("#daemon_state").html(data);
@@ -312,6 +321,17 @@ function send_cmd(cmd){
 	      async: false
 	    });
 	}
+}
+
+function get_rq_str(){
+    var rq_str = "";
+    for(var i=0;i<cams.length;i++){
+        if (i!=0){
+            rq_str += ",";
+        }
+        rq_str += cams[i].ip+":"+cams[i].port+":"+cams[i].channel+":"+cams[i].master;
+    }
+    return rq_str;
 }
 
 function settings_activate() {
@@ -525,37 +545,25 @@ function refresh_images(){
       refresh_images_eyesis();
 }
 
-function convert_source_393(mip,mip_index){
-  var d = new Date();
-  var curr_time = d.getTime();
-  
-  //var cam = 0,1,2,3,  4,5,6,7, 8
-  var tmp_port = 2323+Math.floor(mip_index/4);
-  var tmp_ip = "http://192.168.0."+(+mip+(Math.floor(mip_index/4)))+":"+tmp_port+"/bimg?"+curr_time;
-  return tmp_ip;
-}
-
 function refresh_images_eyesis(){
   var d = new Date();
   var curr_time = d.getTime();
-
+  
   var pic = new Object();
   
-  for(i=0;i<n;i++) {
+  for(var i=0;i<cams.length;i++){
+    
     pic[i] = new Image();
-    //add ip increment here
-    //pic[i].src="http://192.168.0."+(+master_ip+i)+":8081/bimg?"+curr_time;
-    pic[i].src=convert_source_393(master_ip,i);
+    pic[i].src = "http://"+cams[i].ip+":"+cams[i].port+"/bimg?"+curr_time;
     pic[i].index = i;
-
     pic[i].onload = function(){
-      
+
       var w = 200;
       var h = 150;
       var W = 2592;
       var H = 1944;
-      
-      var cnv = document.getElementById('cam'+(this.index+1)+'_canvas');
+
+      var cnv = document.getElementById("cam_"+this.index+"_canvas");
       var cContext = cnv.getContext('2d');
       cnv.setAttribute('width',h);cnv.setAttribute('height',3*w);
       cContext.rotate(90*Math.PI/180);
@@ -566,28 +574,20 @@ function refresh_images_eyesis(){
       //if ((this.index==0)||(this.index==1)||(this.index==7)) k = 3;
       
       if (this.index%2==0) {
-	  if (cams[this.index][0]==1) cContext.drawImage(this, 0,0*H,W,H, 0*w,-1*h,w,h);
-	  if (cams[this.index][1]==1) cContext.drawImage(this, 0,1*H,W,H, 1*w,-1*h,w,h);
-
-	  //for those who has 3 images
-	  if (k==3) {
-	      cContext.scale(-1,1);
-	      if (cams[this.index][2]==1) cContext.drawImage(this, 0,2*H,W,H, -3*w, -1*h, w, h);
-	  }
-	  
+        cContext.drawImage(this, 0,0*H,W,H, 0*w,-1*h,w,h);
+        cContext.drawImage(this, 0,1*H,W,H, 1*w,-1*h,w,h);
+        cContext.scale(-1,1);
+        cContext.drawImage(this, 0,2*H,W,H, -3*w, -1*h, w, h);
       }else{
 	  cContext.scale(1,-1); //mirror is needed
-	  if (cams[this.index][0]==1) cContext.drawImage(this, 0,0*H,W,H, 0*w,0*h,w,h);
-	  if (cams[this.index][1]==1) cContext.drawImage(this, 0,1*H,W,H, 1*w,0*h,w,h);
-	  //for those who has 3 images
-	  if (k==3) {
-	      cContext.scale(-1,1);
-	      if (cams[this.index][2]==1) cContext.drawImage(this, 0,2*H,W,H, -3*w,h*(0),w,h);
-	  }
+	  cContext.drawImage(this, 0,0*H,W,H, 0*w,0*h,w,h);
+	  cContext.drawImage(this, 0,1*H,W,H, 1*w,0*h,w,h);
+          cContext.scale(-1,1);
+	  cContext.drawImage(this, 0,2*H,W,H, -3*w,h*(0),w,h);
       }
       
     };
-  }  
+  }
 }
 
 function refresh_images_triclops(){
@@ -624,10 +624,10 @@ function refresh_histograms(){
   var d = new Date();
   var curr_time = d.getTime();
   
-  for (var i=0;i<n;i++){
-    var src = "http://192.168.0."+((+master_ip)+i)+"/pnghist.cgi?sqrt=1&scale=5&average=5&height=128&fillz=1&linterpz=0&draw=2&colors=41&_time="+curr_time;
-    $("#cam"+(i+1)+"_hist").attr("src", src);
-    $("#cam"+(i+1)+"_hist_front").attr("src", src);
+  for (var i=0;i<cams.length;i++){
+    var src = "http://"+cams[i].ip+"/pnghist.cgi?sensor_port="+cams[i].channel+"&sqrt=1&scale=5&average=5&height=128&fillz=1&linterpz=0&draw=2&colors=41&_time="+curr_time;
+    $("#cam"+i+"_hist").attr("src", src);
+    $("#cam"+i+"_hist_front").attr("src", src);
   }
   
 }
