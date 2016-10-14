@@ -118,7 +118,7 @@ function previews_init(){
   for (var i=0;i<cams.length;i++) {
       var extra = "";
       //if (i==9) extra = " (stereo)";
-      c += "<td align='center'>"+i+extra+"</td>";
+      c += "<td align='center'>"+(i+1)+extra+"</td>";
   }
   c += "</tr></table>";
   //draw a close window cross

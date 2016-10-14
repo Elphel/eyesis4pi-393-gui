@@ -44,7 +44,7 @@ function restore_settings(text,which){
 	  $(".settings_paths").each(function(){
 	      if ($(this).attr("type")=="text")     $(this).val(data.find($(this).attr('id')).text());
 	  });
-	  update_cf_index();
+	  if (imu_logger_en) update_cf_index();
       }
 
       if (restore_pars_en) {

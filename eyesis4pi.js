@@ -18,7 +18,10 @@ var np = 10;
 var mask = "0x1ff";
 
 var camogm_en = true;
-var imu_logger_en = true;
+
+//var imu_logger_en = true;
+var imu_logger_en = false;
+
 var eyesis4pi_en = true;
 var triclops_en = false;
 var phg21_en = false;
@@ -35,20 +38,20 @@ var pc_gps_imu_device_name = "/dev/sda1";
 var camogm_rec_delay = 5;
 
 var cams = [
-  {"ip":"192.168.0.161","port":2326,"channel":3,"master":0},
-  {"ip":"192.168.0.161","port":2325,"channel":2,"master":0},
-  {"ip":"192.168.0.161","port":2323,"channel":0,"master":0},
-  {"ip":"192.168.0.161","port":2324,"channel":1,"master":0},
-  {"ip":"192.168.0.162","port":2326,"channel":3,"master":0},
-  {"ip":"192.168.0.162","port":2325,"channel":2,"master":0},
-  {"ip":"192.168.0.162","port":2323,"channel":0,"master":0},
-  {"ip":"192.168.0.162","port":2324,"channel":1,"master":0},
-  {"ip":"192.168.0.163","port":2325,"channel":2,"master":1},
-  {"ip":"192.168.0.163","port":2326,"channel":3,"master":0}
+  {"ip":"192.168.0.161","port":2326,"channel":3,"master":0,"logger":0},
+  {"ip":"192.168.0.161","port":2325,"channel":2,"master":0,"logger":0},
+  {"ip":"192.168.0.161","port":2323,"channel":0,"master":0,"logger":1},
+  {"ip":"192.168.0.161","port":2324,"channel":1,"master":0,"logger":0},
+  {"ip":"192.168.0.162","port":2326,"channel":3,"master":0,"logger":0},
+  {"ip":"192.168.0.162","port":2325,"channel":2,"master":0,"logger":0},
+  {"ip":"192.168.0.162","port":2323,"channel":0,"master":0,"logger":0},
+  {"ip":"192.168.0.162","port":2324,"channel":1,"master":0,"logger":0},
+  {"ip":"192.168.0.163","port":2325,"channel":2,"master":1,"logger":0},
+  {"ip":"192.168.0.163","port":2326,"channel":3,"master":0,"logger":0}
 ];
 
 function get_master_index(){
-    for (var i=0;i<cam.length;i++){
+    for (var i=0;i<cams.length;i++){
         if (cams[i].master==1){
             return i;
         }
@@ -97,7 +100,7 @@ function init(){
     
     //get the mask - number of sensors on each subcamera
 
-    parseURL();
+    ////parseURL();
     
     //getSettings('settings.xml','pars');
     getSettings(settings_file,'all');
@@ -106,19 +109,19 @@ function init(){
     else           tab1_init("pc");
     select_tab(1);
     
-    rewriteURL();
+    ////rewriteURL();
     
     get_free_space("/data/footage");
     tab3_init();
     console.log("previews_init()");
     previews_init();
-    init_temperatures_table();
+    //init_temperatures_table();
     white_balance_sliders_init();
   
     //apply parameters
-    read_temperatures();
-    if (!disable_intervals) intvl_temperatures = setInterval("read_temperatures()",60000);
-    if (!disable_intervals) intvl_histograms = setInterval("refresh_histograms()",3000);
+    //read_temperatures();
+    //if (!disable_intervals) intvl_temperatures = setInterval("read_temperatures()",60000);
+    //if (!disable_intervals) intvl_histograms = setInterval("refresh_histograms()",3000);
     
     refresh_images();
    
@@ -129,7 +132,7 @@ function init(){
       camogm_cmd("run_status",false,camogm_parse_state);
     }
     //master_ip = $("#address_field1").val().substr(-3,3);
-    var tmp = cams[get_master_index()];
+    var tmp = cams[get_master_index()].ip;
     master_ip = tmp.substr(-3,3);
     
     for (var i=0;i<cams.length;i++) {
@@ -166,13 +169,13 @@ function init(){
     //setTimeout("refresh_images()",1000);
 
     //update_cf_index();
-    master_ip_change_init();
+    //master_ip_change_init();
     
-    $("#single_shots_div").attr("href","single.html?ip="+master_ip+"&n="+n+"&mode=5"+"&period="+($("#input_trigger_period").val()*96000));
+    $("#single_shots_div").attr("href","single.html?ip="+master_ip+"&n="+n+"&mode=5"+"&period="+($("#input_trigger_period").val()*100000));
     
     $("#system_tests_div").attr("href","tests.html?master_ip="+master_ip+"&n="+n);
     
-    resync();
+    //resync();
 }
 
 function status_update(status) {
@@ -334,6 +337,30 @@ function get_rq_str(){
     return rq_str;
 }
 
+function get_unique_rq_str(){
+    res_full = get_unique_cams();
+    rq_str = "";
+    for(var i=0;i<res_full.length;i++){
+        if (i!=0){
+            rq_str += ",";
+        }
+        rq_str += res_full[i].ip+":"+res_full[i].port+":"+res_full[i].channel+":"+res_full[i].master;
+    }
+    return rq_str;
+}
+
+function get_unique_cams(){
+    res = [];
+    res_full = [];
+    for(var i=0;i<cams.length;i++){
+         if (res.indexOf(cams[i].ip)==-1) {
+             res.push(cams[i].ip);
+             res_full.push(cams[i]);
+         }
+    }
+    return res_full;
+}
+
 function settings_activate() {
     if (!$("#settings").is(":visible")) {
 	$("#settings").css({top:'50px',left:'10px','z-index':3}).fadeToggle(300,function(){
@@ -433,7 +460,7 @@ function set_quality(direction){
 }
 
 function set_trigger_period(async,callback)  {
-    set_parameter(master_ip,"TRIG_PERIOD",    +$("#input_trigger_period").val()*96000,async,callback);
+    set_parameter(master_ip,"TRIG_PERIOD",    +$("#input_trigger_period").val()*100000,async,callback);
     send_cmd('set_period');
 }
 function set_skip_frames_mask(async,callback){set_parameter(master_ip,"SET_SKIP",        $("#input_skip_frames").val(),async,callback);}
@@ -501,7 +528,7 @@ function stop(){
 
 function set_parameter(ip,par,val,async,callback){
   //console.log("n is "+n);
-  var url = "eyesis4pi_control.php?set_parameter&master_ip="+ip+"&n="+n+"&pname="+par+"&pvalue="+val;
+  var url = "eyesis4pi_control.php?set_parameter&rq="+get_rq_str()+"&pname="+par+"&pvalue="+val;
   
   $.ajax({
     url: url,
@@ -514,7 +541,7 @@ function set_parameter(ip,par,val,async,callback){
 }
 
 function get_parameter(ip,par){
-  var url = "eyesis4pi_control.php?get_parameter&master_ip="+ip+"&n="+n+"&pname="+par;
+  var url = "eyesis4pi_control.php?get_parameter&rq="+get_rq_str()+"&pname="+par;
   
   $.ajax({
     url: url,
@@ -563,7 +590,7 @@ function refresh_images_eyesis(){
       var W = 2592;
       var H = 1944;
 
-      var cnv = document.getElementById("cam_"+this.index+"_canvas");
+      var cnv = document.getElementById("cam"+this.index+"_canvas");
       var cContext = cnv.getContext('2d');
       cnv.setAttribute('width',h);cnv.setAttribute('height',3*w);
       cContext.rotate(90*Math.PI/180);
@@ -758,7 +785,7 @@ function set_gains(color) {
 
 function start_gps_imu_log(){
   //control stop
-  $.ajax({url:"logger_manager.php?ip=192.168.0."+master_ip+"&cmd=stop",type: "GET",async: false});
+  $.ajax({url:"logger_manager.php?ip="+master_ip+"&cmd=stop",type: "GET",async: false});
   //control unmount
   //cf_unmount();
   //mount
@@ -771,7 +798,7 @@ function start_gps_imu_log(){
   
   //new start
   var d = new Date();
-  var gpsimu_log_filename = "/var/html/CF/"+d.getTime()+".log";
+  var gpsimu_log_filename = "/mnt/sda1/"+d.getTime()+".log";
   var gpsimu_log_index = 1;
   var gpsimu_log_records = 10000000;
   $.ajax({url:"logger_manager.php?ip=192.168.0."+master_ip+"&cmd=start&file="+gpsimu_log_filename+"&index="+gpsimu_log_index+"&n="+gpsimu_log_records,type: "GET",async: false});
@@ -781,7 +808,7 @@ function start_gps_imu_log(){
 
 function stop_gps_imu_log(){
   //stop
-  $.ajax({url:"logger_manager.php?ip=192.168.0."+master_ip+"&cmd=stop",type: "GET",async: false});
+  $.ajax({url:"logger_manager.php?ip="+cams[0].ip+"&cmd=stop",type: "GET",async: false});
   //unmount
   //$.ajax({url:"logger_manager.php?ip=192.168.0."+master_ip+"&cmd=umount",type: "GET",async: false});
   console.log("logger stopped");
@@ -790,7 +817,7 @@ function stop_gps_imu_log(){
 function free_space_gps_imu_log(){
   console.log("free_space_gps_imu_log()");
   //cf_mount();
-  $.ajax({url:"logger_manager.php?ip=192.168.0."+master_ip+"&cmd=free_space&mountpoint=/var/html/CF",type: "GET",async: false, success: function(data){parse_free_space(data);}});
+  $.ajax({url:"logger_manager.php?ip="+cams[0].ip+"&cmd=free_space&mountpoint=/mnt/sda1",type: "GET",async: false, success: function(data){parse_free_space(data);}});
   cf_unmount();
 }
 
@@ -812,9 +839,9 @@ function parse_free_space(data){
 
 function cf_mount(){
     var device = "";
-    if (camogm_en) device =  "/dev/hda1";
+    if (camogm_en) device =  "/dev/sda1";
     else           device =  $("#gpsimu_device_name").val();
-    $.ajax({url:"logger_manager.php?ip=192.168.0."+master_ip+"&cmd=mount&device="+device,type: "GET",async: false});
+    $.ajax({url:"logger_manager.php?ip="+master_ip+"&cmd=mount&device="+device,type: "GET",async: false});
 }
 
 function cf_unmount(){
@@ -851,7 +878,7 @@ function cf_status_blink(msg){
 
 function download_logs(){
     $.ajax({
-	url:"logger_manager.php?ip=192.168.0."+master_ip+"&cmd=download&destination="+$("#footage_path").val()+"/"+$("#footage_subfolder").val(),
+	url:"logger_manager.php?ip="+cams[0].ip+"&cmd=download&destination="+$("#footage_path").val()+"/"+$("#footage_subfolder").val(),
 	type: "GET",
 	async: true
     }).done(function(){
@@ -870,7 +897,7 @@ function clean_cf_card(){
 
 function cf_clean(){
     $.ajax({
-	url:"logger_manager.php?ip=192.168.0."+master_ip+"&cmd=clean&mountpoint=/var/html/CF",
+	url:"logger_manager.php?ip="+cams[0].ip+"&cmd=clean&mountpoint=/mnt/sda1",
 	type: "GET",
 	async: true
     }).done(function(){
@@ -882,7 +909,7 @@ function cf_clean(){
 
 function update_log_name(){
   console.log("update_log_name()");
-  var logname = "/var/html/CF/"+$('#footage_subfolder').val()+".log";
+  var logname = "/mnt/sda1/"+$('#footage_subfolder').val()+".log";
   $('#gpsimu_log_filename').val(logname);
   //update_cf_index();
 }
@@ -893,7 +920,7 @@ function update_cf_index(){
     //cf_mount();
     
     $.ajax({
-	url:"logger_manager.php?ip=192.168.0."+master_ip+"&cmd=scandir&mountpoint=/var/html/CF",
+	url:"logger_manager.php?ip=192.168.0."+master_ip+"&cmd=scandir&mountpoint=/mnt/sda1",
 	type: "GET",
 	dataType: "xml",
 	complete: function(response){udpate_index(response.responseXML);},

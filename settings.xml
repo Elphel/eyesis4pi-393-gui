@@ -1,18 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Document>
-<master_ip>221</master_ip>
+<master_ip>163</master_ip>
 <rec_mode>camogm</rec_mode>
 <footage_path>/data/footage</footage_path>
 <footage_subfolder>test</footage_subfolder>
 <footage_limit>3000</footage_limit>
 <gpsimu_device_name>/dev/hda1</gpsimu_device_name>
 <box_force_jp4>checked</box_force_jp4>
-<input_quality>97</input_quality>
+<input_quality>98</input_quality>
 <input_trigger_period>1000</input_trigger_period>
-<input_skip_frames>0x1ff</input_skip_frames>
 <input_hdrvexpos>0x36000</input_hdrvexpos>
-<input_autoexp_max>1</input_autoexp_max>
-<input_autoexp_lvl>200</input_autoexp_lvl>
-<input_autoexp_fracpix>90.0</input_autoexp_fracpix>
+<input_autoexp_max>40</input_autoexp_max>
+<input_autoexp_lvl>220</input_autoexp_lvl>
+<input_autoexp_fracpix>90</input_autoexp_fracpix>
 <input_autoexp_frames_ahead>1</input_autoexp_frames_ahead>
 </Document>

@@ -9,16 +9,16 @@ var working_intvl = false;
 var eyesis4pi_en = true;
 
 var cams = [
-  {"ip":"192.168.0.161","port":2326,"channel":3,"master":0},
-  {"ip":"192.168.0.161","port":2325,"channel":2,"master":0},
-  {"ip":"192.168.0.161","port":2323,"channel":0,"master":0},
-  {"ip":"192.168.0.161","port":2324,"channel":1,"master":0},
-  {"ip":"192.168.0.162","port":2326,"channel":3,"master":0},
-  {"ip":"192.168.0.162","port":2325,"channel":2,"master":0},
-  {"ip":"192.168.0.162","port":2323,"channel":0,"master":0},
-  {"ip":"192.168.0.162","port":2324,"channel":1,"master":0},
-  {"ip":"192.168.0.163","port":2325,"channel":2,"master":1},
-  {"ip":"192.168.0.163","port":2326,"channel":3,"master":0}
+  {"ip":"192.168.0.161","port":2326,"channel":3,"master":0,"logger":0},
+  {"ip":"192.168.0.161","port":2325,"channel":2,"master":0,"logger":0},
+  {"ip":"192.168.0.161","port":2323,"channel":0,"master":0,"logger":1},
+  {"ip":"192.168.0.161","port":2324,"channel":1,"master":0,"logger":0},
+  {"ip":"192.168.0.162","port":2326,"channel":3,"master":0,"logger":0},
+  {"ip":"192.168.0.162","port":2325,"channel":2,"master":0,"logger":0},
+  {"ip":"192.168.0.162","port":2323,"channel":0,"master":0,"logger":0},
+  {"ip":"192.168.0.162","port":2324,"channel":1,"master":0,"logger":0},
+  {"ip":"192.168.0.163","port":2325,"channel":2,"master":1,"logger":0},
+  {"ip":"192.168.0.163","port":2326,"channel":3,"master":0,"logger":0}
 ];
 
 function get_master_index(){

@@ -82,7 +82,7 @@ if (!$socket) {
 
     if ($cmd=="stop")  {
 	system("killall -9 recorder.php");
-	$ci = $interval*96000;
+	$ci = $interval*100000;
 	
 	$fp = fopen("http://$master_ip/camogmgui/camogm_interface.php?sensor_port=$master_channel&cmd=set_parameter&pname=TRIG_PERIOD&pvalue=".($ci+1), 'r');
 	$fp = fopen("http://$master_ip/camogmgui/camogm_interface.php?sensor_port=$master_channel&cmd=set_parameter&pname=TRIG_PERIOD&pvalue=".($ci), 'r');
