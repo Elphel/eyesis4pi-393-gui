@@ -1,30 +1,23 @@
 <?php
 
+include 'functions_cams.php';
+
 $cmd = "do_nothing";
 
 if (isset($_GET['cmd'])) $cmd = $_GET['cmd'];
 if (isset($_GET['interval'])) $interval = $_GET['interval'];
 
-//skip mask isnot needed
+//skip mask is not needed
 if (isset($_GET['mask'])) $mask = $_GET['mask'];
+$mask = "0x1ff";
 
 // keys assign
 //example: rq=192.168.0.161:2323:0:0,192.168.0.162:2324:1:1
 $cams = array();
+$master = array();
 if (isset($_GET['rq'])){
-  $pars = explode(",",$_GET['rq']);
-  foreach($pars as $val){
-    $ip = strtok($val,":");
-    $port = strtok(":");
-    $channel = strtok(":");
-    $master = strtok(":");
-    array_push($cams,array('ip'=>$ip,'port'=>$port,'channel'=>$channel,'master'=>$master));
-    if ($master=="1"){
-        $master_ip = $ip;
-        $master_port = $port;
-        $master_channel = $channel;
-    }
-  }
+  $cams = get_cams($_GET['rq']);
+  $master = get_master($cams);
 }
 
 if ($cmd=="launch") {
@@ -37,7 +30,6 @@ if ($cmd=="launch") {
 
 function launch(){
     $status = system("./eyesis_daemon.php > /data/footage/daemon_log.txt &");
-
     echo "Daemon started";
 
 //     if (!$status) {
@@ -61,15 +53,7 @@ function launch(){
 
 function get_camstr(){
     global $cams;
-    $msg = "";
-    for($i=0;$i<count($cams);$i++){
-        $msg .= "<cam>\n";
-        $msg .= "  <ip>{$cams[$i]['ip']}</ip>";
-        $msg .= "  <port>{$cams[$i]['port']}</port>";
-        $msg .= "  <channel>{$cams[$i]['channel']}</channel>";
-        $msg .= "  <master>{$cams[$i]['master']}</master>";
-        $msg .= "</cam>\n";
-    }
+    $msg = "<cams>".cams_to_str($cams)."</cams>";
     return $msg;
 }
 

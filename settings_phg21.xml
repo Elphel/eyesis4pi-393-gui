@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Document>
-<master_ip>161</master_ip>
+<master_ip>163</master_ip>
 <rec_mode>pc</rec_mode>
 <footage_path>/data/footage</footage_path>
 <footage_subfolder>test_phg21</footage_subfolder>
 <footage_limit>3000</footage_limit>
-<gpsimu_log_filename>/var/html/CF/test_phg21.log</gpsimu_log_filename>
-<gpsimu_device_name>/dev/hda1</gpsimu_device_name>
+<gpsimu_log_filename>/mnt/sda1/test_phg21.log</gpsimu_log_filename>
+<gpsimu_device_name>/dev/sda1</gpsimu_device_name>
 <gpsimu_records_per_file>10000000</gpsimu_records_per_file>
 <box_force_jp4>checked</box_force_jp4>
-<input_quality>97</input_quality>
+<input_quality>98</input_quality>
 <input_trigger_period>2000</input_trigger_period>
 <input_skip_frames>0x1ff</input_skip_frames>
 <input_hdrvexpos>0x36000</input_hdrvexpos>

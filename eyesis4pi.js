@@ -8,25 +8,29 @@ var master_ip = "161";
 var settings_file = "settings.xml";
 
 var daemon_restart_en = true;
+
 var intvl_temperatures;
 var intvl_histograms;
 var intvl_camogm_status;
 var intvl_hdd_free_space;
 var intvl_status;
+
 var n = 3;
 var np = 10;
 var mask = "0x1ff";
 
 var camogm_en = true;
 
-//var imu_logger_en = true;
+// TODO: enable logger
+// var imu_logger_en = true;
 var imu_logger_en = false;
 
+// systems
 var eyesis4pi_en = true;
 var triclops_en = false;
 var phg21_en = false;
 
-//updated once on reload page
+//updated once on page reload
 var update_state_en = true;
 var restore_parameters_en = true;
 
@@ -35,6 +39,7 @@ var pc_footage_subfolder = "";
 var pc_footage_limit = 3000;
 var pc_gps_imu_device_name = "/dev/sda1";
 
+// TODO: reduce?
 var camogm_rec_delay = 5;
 
 var cams = [
@@ -50,15 +55,18 @@ var cams = [
   {"ip":"192.168.0.163","port":2326,"channel":3,"master":0,"logger":0}
 ];
 
+
 function get_master_index(){
-    for (var i=0;i<cams.length;i++){
-        if (cams[i].master==1){
-            return i;
-        }
-    }
+    for (var i=0;i<cams.length;i++) if (cams[i].master==1) return i;
     return -1;
 }
 
+function get_logger_index(){
+    for (var i=0;i<cams.length;i++) if (cams[i].logger==1) return i;
+    return -1;
+}
+
+// for PC recording
 function check_footage_path(){
     $.ajax({
       url: "rights.php?path="+$("#footage_path").val(),
@@ -67,9 +75,10 @@ function check_footage_path(){
 	check_footage_path_response(response);
       },
       contentType: "text/xml; charset=\"utf-8\""
-    });  
+    });
 }
 
+// for PC recording (response)
 function check_footage_path_response(text){
     var data = $(text).find("Document");
     var writable = data.find("writable").text();
@@ -78,51 +87,46 @@ function check_footage_path_response(text){
     else               $("#footage_path_message").html("");
 }
 
-function show_notice(text){
-    $("#notice").fadeIn(300);    
-    
-    text += "<div style='position:absolute;top:3px;right:3px;'><button id='close_notice' onclick='close_notice()'><img id='close_notice_cross' src='pictures/cross_white.gif' style='width:8px;height:8px;' /></button></div>";
-  
-    $("#notice").css({background:"rgba(230,230,230,0.95)",padding:"30px 50px 30px 50px",position:"absolute"});
-    $("#notice").html(text);
-    
-    $("#notice").draggable();
-}
-
-function close_notice(){
-    $("#notice").fadeOut(300);
-}
-
+// INIT
 function init(){
     console.log("init()");
     
-    //camogm_cmd("mount",false);
-    
-    //get the mask - number of sensors on each subcamera
-
     ////parseURL();
     
     //getSettings('settings.xml','pars');
     getSettings(settings_file,'all');
     
+    // TAB 1 init
     if (camogm_en) tab1_init("camogm");
     else           tab1_init("pc");
+  
+    // TAB 2 init
+    //No need - it's already in index.html
+    //init sliders here
+    white_balance_sliders_init();
+    
+    // TAB 3 init
+    tab3_init();
+    
+    // Select default TAB 1
     select_tab(1);
     
     ////rewriteURL();
     
+    // for PC
     get_free_space("/data/footage");
-    tab3_init();
+    
     console.log("previews_init()");
+    
     previews_init();
     //init_temperatures_table();
-    white_balance_sliders_init();
+    
   
     //apply parameters
     //read_temperatures();
     //if (!disable_intervals) intvl_temperatures = setInterval("read_temperatures()",60000);
     //if (!disable_intervals) intvl_histograms = setInterval("refresh_histograms()",3000);
-    
+    refresh_histograms();
     refresh_images();
    
     send_cmd('state');
@@ -171,7 +175,8 @@ function init(){
     //update_cf_index();
     //master_ip_change_init();
     
-    $("#single_shots_div").attr("href","single.html?ip="+master_ip+"&n="+n+"&mode=5"+"&period="+($("#input_trigger_period").val()*100000));
+    //single shots init
+    $("#single_shots_div").attr("href","single.html?rq="+cams_to_str()+"&mode=5"+"&period="+($("#input_trigger_period").val()*100000));
     
     $("#system_tests_div").attr("href","tests.html?master_ip="+master_ip+"&n="+n);
     
@@ -303,7 +308,7 @@ function send_cmd(cmd){
 	}else{
 	    console.log("Trigger interval is "+download_interval);
 	    $.ajax({
-	      url: "client.php?cmd="+cmd+"&rq="+get_rq_str()+"&interval="+download_interval+"&mask="+mask,
+	      url: "client.php?cmd="+cmd+"&rq="+cams_to_str()+"&interval="+download_interval+"&mask="+mask,
 	      success: function(data){
 		$("#status").html(data);
 		$("#daemon_state").html(data);
@@ -326,13 +331,13 @@ function send_cmd(cmd){
 	}
 }
 
-function get_rq_str(){
+function cams_to_str(){
     var rq_str = "";
     for(var i=0;i<cams.length;i++){
         if (i!=0){
             rq_str += ",";
         }
-        rq_str += cams[i].ip+":"+cams[i].port+":"+cams[i].channel+":"+cams[i].master;
+        rq_str += cams[i].ip+":"+cams[i].port+":"+cams[i].channel+":"+cams[i].master+":"+cams[i].logger;
     }
     return rq_str;
 }
@@ -344,7 +349,7 @@ function get_unique_rq_str(){
         if (i!=0){
             rq_str += ",";
         }
-        rq_str += res_full[i].ip+":"+res_full[i].port+":"+res_full[i].channel+":"+res_full[i].master;
+        rq_str += res_full[i].ip+":"+res_full[i].port+":"+res_full[i].channel+":"+res_full[i].master+":"+res_full[i].logger;
     }
     return rq_str;
 }
@@ -429,7 +434,7 @@ function apply_parameters(){
   if ($("#chk_autoexp_lvl").attr('checked'))          set_autoexp_level(false);
   if ($("#chk_autoexp_fracpix").attr('checked'))      set_autoexp_fracpix(false);
   if ($("#chk_autoexp_frames_ahead").attr('checked')) set_autoexp_ahead(false);
-  if ($("#chk_skip_frames").attr('checked'))          set_skip_frames_mask(false);  
+  //if ($("#chk_skip_frames").attr('checked'))          set_skip_frames_mask(false);  
   if ($("#chk_hdrvexpos").attr('checked'))            set_hdr_vexpos(false);
   save_settings();
 }
@@ -437,14 +442,19 @@ function apply_parameters(){
 function restore_parameters(){
     console.log("restore_parameters()");
     intvl_status = setInterval("status_message(true,'Applying parameters')",1000);
-    set_skip_frames_mask(true,rp_set_hdr_vexpos());
+    //set_skip_frames_mask(true,rp_set_hdr_vexpos());
+    rp_set_hdr_vexpos();
 }
 function rp_set_hdr_vexpos(){set_hdr_vexpos(true,rp_set_autoexp_max());}
 function rp_set_autoexp_max()     {set_autoexp_max(true,rp_set_autoexp_level());}
 function rp_set_autoexp_level()   {set_autoexp_level(true,rp_set_autoexp_fracpix());}
 function rp_set_autoexp_fracpix() {set_autoexp_fracpix(true,rp_set_autoexp_ahead());}
-function rp_set_autoexp_ahead()   {set_autoexp_ahead(true,rp_set_skip_frames_mask());}
-function rp_set_skip_frames_mask(){set_skip_frames_mask(true,rp_set_trigger_period());}
+
+function rp_set_autoexp_ahead()   {set_autoexp_ahead(true,rp_set_trigger_period());}
+// no skipping
+//function rp_set_autoexp_ahead()   {set_autoexp_ahead(true,rp_set_skip_frames_mask());}
+//function rp_set_skip_frames_mask(){set_skip_frames_mask(true,rp_set_trigger_period());}
+
 function rp_set_trigger_period()  {set_trigger_period(true,rp_done());}
 function rp_done(){
   clearInterval(intvl_status);
@@ -528,7 +538,7 @@ function stop(){
 
 function set_parameter(ip,par,val,async,callback){
   //console.log("n is "+n);
-  var url = "eyesis4pi_control.php?set_parameter&rq="+get_rq_str()+"&pname="+par+"&pvalue="+val;
+  var url = "eyesis4pi_control.php?set_parameter&rq="+cams_to_str()+"&pname="+par+"&pvalue="+val;
   
   $.ajax({
     url: url,
@@ -541,7 +551,7 @@ function set_parameter(ip,par,val,async,callback){
 }
 
 function get_parameter(ip,par){
-  var url = "eyesis4pi_control.php?get_parameter&rq="+get_rq_str()+"&pname="+par;
+  var url = "eyesis4pi_control.php?get_parameter&rq="+cams_to_str()+"&pname="+par;
   
   $.ajax({
     url: url,
@@ -600,6 +610,12 @@ function refresh_images_eyesis(){
       //mask out 2s
       //if ((this.index==0)||(this.index==1)||(this.index==7)) k = 3;
       
+      /*
+      cContext.drawImage(this, 0,0*H,W,H, 0*w, -1*h,w,h);
+      cContext.drawImage(this, 0,1*H,W,H, 1*w, -1*h,w,h);
+      cContext.drawImage(this, 0,2*H,W,H, 2*w, -1*h,w,h);
+      */
+
       if (this.index%2==0) {
         cContext.drawImage(this, 0,0*H,W,H, 0*w,-1*h,w,h);
         cContext.drawImage(this, 0,1*H,W,H, 1*w,-1*h,w,h);
@@ -612,7 +628,6 @@ function refresh_images_eyesis(){
           cContext.scale(-1,1);
 	  cContext.drawImage(this, 0,2*H,W,H, -3*w,h*(0),w,h);
       }
-      
     };
   }
 }
@@ -678,6 +693,7 @@ function close_settings(){
   $("#settings").fadeOut(300);
 }
 
+// For PC
 function set_recording_params(){
   var footage_path = $("#footage_path").val();
   var footage_subfolder = $("#footage_subfolder").val();
@@ -697,91 +713,6 @@ function set_recording_params(){
   
 }
 
-function white_balance_sliders_init(){
-    $( "#radio" ).buttonset();
-
-    $( "#red" ).slider({
-	orientation: "horizontal",
-	range: "min",
-	min: 100,
-	max: 1600,
-	value: 282,
-	slide: function( event, ui ) {
-	    $("#red_gain").val(ui.value/100);
-	    },
-	change: set_red
-    });
-
-    $( "#green" ).slider({
-	orientation: "horizontal",
-	range: "min",
-	min: 100,
-	max: 1600,
-	value: 200,
-	slide: function( event, ui ) {
-	    $("#green_gain").val(ui.value/100);
-	    },
-	change: set_green
-    });
-
-    $( "#blue" ).slider({
-	orientation: "horizontal",
-	range: "min",
-	min: 100,
-	max: 1600,
-	value: 245,
-	slide: function( event, ui ) {
-	    $("#blue_gain").val(ui.value/100);
-	    },
-	change: set_blue
-    });
-
-    $("#red_gain").val($("#red" ).slider("values", 1)/100 );
-    $("#green_gain").val($("#green" ).slider("values", 1)/100 );
-    $("#blue_gain").val($("#blue" ).slider("values", 1)/100 );
-}
-
-function moveslider() {
-    $("#red").slider( "value", 100*$("#red_gain").val());
-    $("#green").slider( "value", 100*$("#green_gain").val());
-    $("#blue").slider( "value", 100*$("#blue_gain").val());
-}
-
-function set_red(){set_gains("red");}
-function set_green(){set_gains("green");}
-function set_blue(){set_gains("blue");}
-
-function set_default_gains(light) {
-    if (light=="sunny") {
-      $("#red_gain").val(2.82);
-      $("#green_gain").val(2);
-      $("#blue_gain").val(2.45);
-    }
-    if (light=="cloudy") {
-      $("#red_gain").val(2.82);
-      $("#green_gain").val(2);
-      $("#blue_gain").val(2.45);
-    }
-    if (light=="fluorescent") {
-      $("#red_gain").val(2.15);
-      $("#green_gain").val(2);
-      $("#blue_gain").val(3.82);
-    }
-
-    moveslider();
-    //set_gains();
-}
-
-function set_gains(color) {
-    console.log("set_gains('"+color+"')");
-    if (color=="red"||color=="all") set_parameter(master_ip,'GAINR' ,Math.round(65536*$("#red_gain").val()),false); // *0x10000
-    if (color=="green"||color=="all") {
-      set_parameter(master_ip,'GAING' ,Math.round(65536*$("#green_gain").val()),false);
-      set_parameter(master_ip,'GAINGB',Math.round(65536*$("#green_gain").val()),false);
-    }
-    if (color=="blue"||color=="all") set_parameter(master_ip,'GAINB' ,Math.round(65536*$("#blue_gain").val()),false);
-    //setTimeout("refresh_images()",2000);
-}  
 
 function start_gps_imu_log(){
   //control stop
@@ -816,8 +747,9 @@ function stop_gps_imu_log(){
 
 function free_space_gps_imu_log(){
   console.log("free_space_gps_imu_log()");
-  //cf_mount();
-  $.ajax({url:"logger_manager.php?ip="+cams[0].ip+"&cmd=free_space&mountpoint=/mnt/sda1",type: "GET",async: false, success: function(data){parse_free_space(data);}});
+  //cf_mount();?
+  logger_index = get_logger_index();
+  $.ajax({url:"logger_manager.php?ip="+cams[logger_index].ip+"&cmd=free_space&mountpoint=/mnt/sda1",type: "GET",async: false, success: function(data){parse_free_space(data);}});
   cf_unmount();
 }
 
@@ -827,21 +759,19 @@ function parse_free_space(data){
   var end = "KB";
   for (var i=0;i<3;i++) {
       raw_data = Math.round(10*raw_data/1024)/10;
-      
       if (i==1) end = "MB";
       if (i==2) end = "GB";
-      
       if (raw_data<1024) break;
   }
-  
   $("#cf_card_free_space").html(raw_data+" "+end);
 }
 
 function cf_mount(){
     var device = "";
+    logger_index = get_logger_index();
     if (camogm_en) device =  "/dev/sda1";
     else           device =  $("#gpsimu_device_name").val();
-    $.ajax({url:"logger_manager.php?ip="+master_ip+"&cmd=mount&device="+device,type: "GET",async: false});
+    $.ajax({url:"logger_manager.php?ip="+cams[logger_index].ip+"&cmd=mount&device="+device,type: "GET",async: false});
 }
 
 function cf_unmount(){
@@ -859,32 +789,23 @@ function download_gps_imu_log(){
 
 function cf_status_blink(msg){
     var d = new Date();
-
     var curr_sec = d.getSeconds();
-
-    if      (curr_sec%4==0) {
-	$("#cf_status").html("<b style='font-size:12px;'>"+msg+".</b>");
-    }
-    else if (curr_sec%4==1) {
-	$("#cf_status").html("<b style='font-size:12px;'>"+msg+"..</b>");
-    }
-    else if (curr_sec%4==2) {
-	$("#cf_status").html("<b style='font-size:12px;'>"+msg+"...</b>");
-    }
-    else if (curr_sec%4==3) {
-	$("#cf_status").html("<b style='font-size:12px;'>"+msg+"</b>");
-    }    
+    if      (curr_sec%4==0) $("#cf_status").html("<b style='font-size:12px;'>"+msg+".</b>");
+    else if (curr_sec%4==1) $("#cf_status").html("<b style='font-size:12px;'>"+msg+"..</b>");
+    else if (curr_sec%4==2) $("#cf_status").html("<b style='font-size:12px;'>"+msg+"...</b>");
+    else if (curr_sec%4==3) $("#cf_status").html("<b style='font-size:12px;'>"+msg+"</b>");
 }
 
 function download_logs(){
+    logger_index = get_logger_index();
     $.ajax({
-	url:"logger_manager.php?ip="+cams[0].ip+"&cmd=download&destination="+$("#footage_path").val()+"/"+$("#footage_subfolder").val(),
+	url:"logger_manager.php?ip="+cams[logger_index].ip+"&cmd=download&destination="+$("#footage_path").val()+"/"+$("#footage_subfolder").val(),
 	type: "GET",
 	async: true
     }).done(function(){
 	cf_unmount();
 	clearInterval(tmp_intv);
-	$("#cf_status").html("<b style='font-size:12px;'>Downloading done.<b>");
+	$("#cf_status").html("<b style='font-size:12px;'>Done<b>");
     });
 }
 
@@ -896,8 +817,9 @@ function clean_cf_card(){
 }
 
 function cf_clean(){
+    logger_index = get_logger_index();   
     $.ajax({
-	url:"logger_manager.php?ip="+cams[0].ip+"&cmd=clean&mountpoint=/mnt/sda1",
+	url:"logger_manager.php?ip="+cams[logger_index].ip+"&cmd=clean&mountpoint=/mnt/sda1",
 	type: "GET",
 	async: true
     }).done(function(){
@@ -915,12 +837,13 @@ function update_log_name(){
 }
 
 function update_cf_index(){
+    logger_index = get_logger_index();
     //console.log("update_cf_index()");
     //save_settings();
     //cf_mount();
     
     $.ajax({
-	url:"logger_manager.php?ip=192.168.0."+master_ip+"&cmd=scandir&mountpoint=/mnt/sda1",
+	url:"logger_manager.php?ip="+cams[logger_index].ip+"&cmd=scandir&mountpoint=/mnt/sda1",
 	type: "GET",
 	dataType: "xml",
 	complete: function(response){udpate_index(response.responseXML);},
@@ -1077,6 +1000,7 @@ function status_message(en,msg){
   }
 }
 
+// no need
 function resync(){
   console.log("resync()");
   $.ajax({url:"resync.php?ip=192.168.0."+master_ip,type: "GET",async: true});

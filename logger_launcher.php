@@ -34,10 +34,10 @@
 
 //default parameters
 $cmd = "start";
-$file = "/var/html/CF/imu_log.log";
+$file = "/mnt/sda1/imu_log.log";
 $index = 1;
 $n = 5000000;
-$mount_point = "/var/html/CF";
+$mount_point = "/mnt/sda1";
 $force_dev = false;
 
 
@@ -60,15 +60,10 @@ if ($cmd=="start") {
 
     if (!is_dir($mount_point)) mkdir($mount_point);
 
-    //detect devices
-    //$dev = "/dev/hda1";
-
     if (!$force_dev) {
-	$hda1 = exec("cat /proc/diskstats | grep 'hda1'");
-	$hdb1 = exec("cat /proc/diskstats | grep 'hdb1'");
+	$sda1 = exec("cat /proc/diskstats | grep 'sda1'");
 
-	if      (strlen($hda1)>0) $dev = "/dev/hda1";
-	else if (strlen($hdb1)>0) $dev = "/dev/hdb1";
+	if      (strlen($sda1)>0) $dev = "/dev/sda1";
 	else {
 	  $xml .= "\t<error>CF cards not found</error>\n";
 	  send_response($xml);

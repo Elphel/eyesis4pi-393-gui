@@ -1,33 +1,22 @@
 <?php
 
 include 'filesystem.php';
+include 'functions_cams.php';
 
 $root_path = $_GET['root_path'];
 $subfolder  = $_GET['subfolder'];
 
+$period = $_GET['period']+0;
+
 $index=0;
 $file_limit = 3000;
 
-$master_ip = "";
-$master_port = "";
-$master_channel = "";
-
 // keys assign
 $cams = array();
+$master = array();
 if (isset($_GET['rq'])){
-  $pars = explode(",",$_GET['rq']);
-  foreach($pars as $val){
-    $ip = strtok($val,":");
-    $port = strtok(":");
-    $channel = strtok(":");
-    $master = strtok(":");
-    array_push($cams,array('ip'=>$ip,'port'=>$port,'channel'=>$channel,'master'=>$master));
-    if ($master=="1"){
-        $master_ip = $ip;
-        $master_port = $port;
-        $master_channel = $channel;
-    }
-  }
+  $cams = get_cams($_GET['rq']);
+  $master = get_master($cams);
 }
 
 $path = $root_path."/".$subfolder;
@@ -48,15 +37,15 @@ if (!is_dir($path)) {
     umask($old);
 }
 
-if ($fp = simplexml_load_file("http://$master_ip:$master_port/trig/pointers")) {
+if ($fp = simplexml_load_file("http://{$master['ip']}:{$master['port']}/trig/pointers")) {
     //$system_status = system("./images.sh $ip $n $path");
     for($i=0;$i<count($cams);$i++){
-        exec("./get_image.sh \"{$cams[$i]['ip']}:{$cams[$i]['port']}/bimg\" \"${path}\" \"${i}.jp4\" > /dev/null 2>&1 &");
+        exec("./get_image.sh \"{$cams[$i]['ip']}:{$cams[$i]['port']}/bimg\" \"${path}\" \"${i}.jp4\" \"${i}.log\" \"${i}\"> /dev/null 2>&1 &");
     }
-    
     //why fopen?
-    $fp = fopen("http://$master_ip/camogmgui/camogm_interface.php?cmd=set_parameter&pname=TRIG_PERIOD&pvalue=192000001&sensor_port=$master_channel", 'r');
-    $fp = fopen("http://$master_ip/camogmgui/camogm_interface.php?cmd=set_parameter&pname=TRIG_PERIOD&pvalue=192000000&sensor_port=$master_channel", 'r');
+    $add_str = "http://{$master['ip']}/camogmgui/camogm_interface.php?cmd=set_parameter&pname=TRIG_PERIOD&pvalue=";
+    $fp = fopen($addr_str.($period+1)."&sensor_port={$master['channel']}", 'r');
+    $fp = fopen($addr_str.($period+1)."&sensor_port={$master['channel']}", 'r');
     //$fp = fopen("http://192.168.0.221:8081/trig/pointers",'r');
     //$fp = fopen("http://192.168.0.221:8081/trig/pointers",'r');
     //$fp = fopen("http://192.168.0.221:8081/trig/pointers",'r');

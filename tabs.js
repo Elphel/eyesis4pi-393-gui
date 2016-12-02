@@ -1,3 +1,4 @@
+// TAB 1: begin
 function tab1_init(mode){
   
     var tab1_contents = "";
@@ -21,7 +22,7 @@ function tab1_init(mode){
       <br/>\
       <table>\
       <tr>\
-	  <td><div class="fixed_height" >Absolute footage path:</div></td>\
+	  <td><div class="fixed_height" >Footage absolute path:</div></td>\
 	  <td><div class="fixed_height" ><input id="footage_path" type="text" style="width:200px;" value="/data/footage" class="settings_paths" onchange="check_footage_path()"></div></td>\
 	  <td><div id="footage_path_message"></div></td>\
       </tr>\
@@ -40,8 +41,8 @@ function tab1_init(mode){
       <br/>\
       <table>\
       <tr>\
-	  <td><div class="fixed_height" >Device name <span style="font-size:12px;">(/dev/hda1,&nbsp;/dev/hdb1)</span>:</div></td>\
-	  <td><div class="fixed_height" ><input id="gpsimu_device_name" type="text" style="width:200px;" value="/dev/hda1" class="settings_paths"></div></td>\
+	  <td><div class="fixed_height" >Device name <span style="font-size:12px;">(/dev/sda1)</span>:</div></td>\
+	  <td><div class="fixed_height" ><input id="gpsimu_device_name" type="text" style="width:200px;" value="/dev/sda1" class="settings_paths"></div></td>\
 	  <td>\
 	      <button id="btn_cf_mount" onclick="cf_mount()">Mount</button>\
 	      <button id="btn_cf_unmount" onclick="cf_unmount()">Unmount</button>\
@@ -52,7 +53,7 @@ function tab1_init(mode){
 	  <td><div id="cf_card_free_space"></div></td>\
       </tr>\
       <tr>\
-	  <td colspan="2"><button id="btn_dl_logs" onclick="download_gps_imu_log()">Download contents to the absolute footage path</button></td>\
+	  <td colspan="2"><button id="btn_dl_logs" onclick="download_gps_imu_log()">Download contents to the footage absolute path</button></td>\
 	  <td>\
 	      <button id="btn_clean_cd" onclick="clean_cf_card()">Clean</button>\
 	  </td>\
@@ -75,7 +76,97 @@ function tab1_init(mode){
     $("#tab1_contents_").html(tab1_contents);
     getSettings(settings_file,'paths');
 }
+// TAB 1: end
 
+// TAB 2: begin
+function white_balance_sliders_init(){  
+    $( "#radio" ).buttonset();
+
+    $( "#red" ).slider({
+	orientation: "horizontal",
+	range: "min",
+	min: 100,
+	max: 1600,
+	value: 282,
+	slide: function( event, ui ) {
+	    $("#red_gain").val(ui.value/100);
+	    },
+	change: set_red
+    });
+
+    $( "#green" ).slider({
+	orientation: "horizontal",
+	range: "min",
+	min: 100,
+	max: 1600,
+	value: 200,
+	slide: function( event, ui ) {
+	    $("#green_gain").val(ui.value/100);
+	    },
+	change: set_green
+    });
+
+    $( "#blue" ).slider({
+	orientation: "horizontal",
+	range: "min",
+	min: 100,
+	max: 1600,
+	value: 245,
+	slide: function( event, ui ) {
+	    $("#blue_gain").val(ui.value/100);
+	    },
+	change: set_blue
+    });
+
+    $("#red_gain").val($("#red" ).slider("values", 1)/100 );
+    $("#green_gain").val($("#green" ).slider("values", 1)/100 );
+    $("#blue_gain").val($("#blue" ).slider("values", 1)/100 );
+}
+
+function moveslider() {
+    $("#red").slider( "value", 100*$("#red_gain").val());
+    $("#green").slider( "value", 100*$("#green_gain").val());
+    $("#blue").slider( "value", 100*$("#blue_gain").val());
+}
+
+function set_red(){set_gains("red");}
+function set_green(){set_gains("green");}
+function set_blue(){set_gains("blue");}
+
+function set_default_gains(light) {
+    if (light=="sunny") {
+      $("#red_gain").val(2.82);
+      $("#green_gain").val(2);
+      $("#blue_gain").val(2.45);
+    }
+    if (light=="cloudy") {
+      $("#red_gain").val(2.82);
+      $("#green_gain").val(2);
+      $("#blue_gain").val(2.45);
+    }
+    if (light=="fluorescent") {
+      $("#red_gain").val(2.15);
+      $("#green_gain").val(2);
+      $("#blue_gain").val(3.82);
+    }
+
+    moveslider();
+    //set_gains();
+}
+
+function set_gains(color) {
+    console.log("set_gains('"+color+"')");
+    if (color=="red"||color=="all") set_parameter(master_ip,'GAINR' ,Math.round(65536*$("#red_gain").val()),false); // *0x10000
+    if (color=="green"||color=="all") {
+      set_parameter(master_ip,'GAING' ,Math.round(65536*$("#green_gain").val()),false);
+      set_parameter(master_ip,'GAINGB',Math.round(65536*$("#green_gain").val()),false);
+    }
+    if (color=="blue"||color=="all") set_parameter(master_ip,'GAINB' ,Math.round(65536*$("#blue_gain").val()),false);
+    //setTimeout("refresh_images()",2000);
+}
+// TAB 2: end
+
+// TAB 3: begin
 function tab3_init(){
   var c = "<table>\n";
   var tmp = "";
@@ -93,8 +184,8 @@ function tab3_init(){
   c += "<div style='padding:5px;'>Temperatures map:</div><div id='temperatures_map'></div>";
     
   $("#tab3_contents").html(c);
-  
 }
+// TAB 3: end
 
 function previews_init(){
   

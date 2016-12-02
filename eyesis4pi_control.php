@@ -29,6 +29,10 @@
 // Check location - should be launched on the PC websrver
 $elp_const=get_defined_constants(true);
 
+ini_set('display_errors', 1);
+
+include 'functions_cams.php';
+include 'parallel_requests_inc.php';
 
 if (isset($elp_const["elphel"])) {
   $fp = fopen($_SERVER['SCRIPT_FILENAME'], 'rb');
@@ -108,26 +112,14 @@ foreach($_GET as $key=>$value) {
 	}
 }
 
-$master_ip = "";
-$master_port = "";
-$master_channel = "";
-
 // keys assign
 $cams = array();
+$master = array();
+$unique_cams = array();
 if (isset($_GET['rq'])){
-  $pars = explode(",",$_GET['rq']);
-  foreach($pars as $val){
-    $ip = strtok($val,":");
-    $port = strtok(":");
-    $channel = strtok(":");
-    $master = strtok(":");
-    array_push($cams,array('ip'=>$ip,'port'=>$port,'channel'=>$channel,'master'=>$master));
-    if ($master=="1"){
-        $master_ip = $ip;
-        $master_port = $port;
-        $master_channel = $channel;
-    }
-  }
+  $cams = get_cams($_GET['rq']);
+  $master = get_master($cams);
+  $unique_cams = get_unique_cams($cams);
 }
 
 //overrides
@@ -140,72 +132,66 @@ if ($test) {
 }
 
 if ($set_parameter) {
-    for ($i=0;$i<count($cams);$i++){
-        if ($pname=="SET_SKIP") 
-            $fp = fopen("http://{$cams[$i]['ip']}/camogm_interface.php?sensor_port={$cams[$i]['channel']}&cmd=set_skip&skip_mask=".dechex($pvalue), 'r');
-        else
-            $fp = fopen("http://{$cams[$i]['ip']}/camogm_interface.php?sensor_port={$cams[$i]['channel']}&cmd=set_parameter&pname=$pname&pvalue=$pvalue", 'r');
 
-        if ($fp) {
-            $content = '';
-            while ($line = fread($fp, 1024)) {
-                $content .= $line;
-            }
-            $message_IP[$i] = $content;
-        }else{
-            $message_IP[$i] = "no connection";
-        }
-        $res_xml .= $message_IP[$i];
-    }
-
-    header("Content-Type: text/xml");
-    header("Content-Length: ".strlen($res_xml)."\n");
-    header("Pragma: no-cache\n");
-    printf("%s", $res_xml);
-    flush();
+  $rqs = array();
+  foreach($cams as $cam){
+    $rqstr = "http://{$cam['ip']}/parsedit.php?immediate&sensor_port={$cam['channel']}&$pname=$pvalue";
+    array_push($rqs,$rqstr);
+  }
+  $res_xmls = curl_multi_finish(curl_multi_start($rqs),false);  
+  $res_xml = implode("",$res_xmls);
+  
+  header("Content-Type: text/xml");
+  header("Content-Length: ".strlen($res_xml)."\n");
+  header("Pragma: no-cache\n");
+  printf("%s", $res_xml);
+  flush();
 }
 
 if ($get_parameter) {
-	for ($i=0;$i<count($cams);$i++) {
-                $content = file_get_contents("http://{$cams[$i]['ip']}/camogm_interface.php?sensor_port={$cams[$i]['channel']}&cmd=get_parameter&pname=$pname");
-                $message_IP[$i] = $content;
-                $res_xml .= $message_IP[$i];
-	}
 
-	header("Content-Type: text/xml");
-	header("Content-Length: ".strlen($res_xml)."\n");
-	header("Pragma: no-cache\n");
-	printf("%s", $res_xml);
-	flush();
+  $rqs = array();
+  foreach($cams as $cam){
+    $rqstr = "http://{$cam['ip']}/parsedit.php?immediate&sensor_port={$cam['channel']}&$pname";
+    array_push($rqs,$rqstr);
+  }
+  $res_xmls = curl_multi_finish(curl_multi_start($rqs),false);  
+  $res_xml = implode("",$res_xmls);
+
+  header("Content-Type: text/xml");
+  header("Content-Length: ".strlen($res_xml)."\n");
+  header("Pragma: no-cache\n");
+  printf("%s", $res_xml);
+  flush();
 
 }
 
 //CAMOGM
 if ($run_camogm) {
-	for ($i=0;$i<count($cams);$i++) {
+	for ($i=0;$i<count($unique_cams);$i++) {
 	    // start camogm
 	    //if (!$debug) fopen("http://{$cams[$i]['ip']}/camogm_interface.php?cmd=run_camogm", 'r');
 	    //else         fopen("http://{$cams[$i]['ip']}/camogm_interface.php?cmd=run_camogm&debug=$debug&debuglev=$debuglev", 'r');
 	    
-	    fopen("http://{$cams[$i]['ip']}/camogm_interface.php?cmd=run_camogm", 'r');
+	    fopen("http://{$unique_cams[$i]['ip']}/camogm_interface.php?cmd=run_camogm", 'r');
 	    
 	    // set debug level
-	    fopen("http://{$cams[$i]['ip']}/camogm_interface.php?cmd=set_debuglev&debuglev=$debuglev", 'r');
+	    fopen("http://{$unique_cams[$i]['ip']}/camogm_interface.php?cmd=set_debuglev&debuglev=$debuglev", 'r');
 	    // set "/var/0" prefix
 	    //fopen("http://{$cams[$i]['ip']}/camogm_interface.php?cmd=set_prefix&prefix=/var/html/CF/", 'r');
             // default path
-	    fopen("http://{$cams[$i]['ip']}/camogm_interface.php?cmd=setrawdevpath&path=/dev/sda2", 'r');
+	    fopen("http://{$unique_cams[$i]['ip']}/camogm_interface.php?cmd=setrawdevpath&path=/dev/sda2", 'r');
 	    //mount
 	    //fopen("http://{$cams[$i]['ip']}/camogm_interface.php?cmd=mount&partition=/dev/hda1&mountpoint=/var/html/CF", 'r');
 	    // set .mov format
-	    fopen("http://{$cams[$i]['ip']}/camogm_interface.php?cmd=setjpeg", 'r');
+	    fopen("http://{$unique_cams[$i]['ip']}/camogm_interface.php?cmd=setjpeg", 'r');
 	    // set frames_per_chunk in exif to 1
-	    fopen("http://{$cams[$i]['ip']}/camogm_interface.php?cmd=set_frames_per_chunk&frames_per_chunk=1", 'r');
+	    fopen("http://{$unique_cams[$i]['ip']}/camogm_interface.php?cmd=set_frames_per_chunk&frames_per_chunk=1", 'r');
 	    // set default split parameters
-	    fopen("http://{$cams[$i]['ip']}/camogm_interface.php?cmd=set_duration&duration=1000", 'r');
-	    fopen("http://{$cams[$i]['ip']}/camogm_interface.php?cmd=set_size&size=1800000000", 'r');
+	    fopen("http://{$unique_cams[$i]['ip']}/camogm_interface.php?cmd=set_duration&duration=1000", 'r');
+	    fopen("http://{$unique_cams[$i]['ip']}/camogm_interface.php?cmd=set_size&size=1800000000", 'r');
 	    //debugging
-	    fopen("http://{$cams[$i]['ip']}/camogm_interface.php?cmd=set_max_frames&max_frames=1000", 'r');
+	    fopen("http://{$unique_cams[$i]['ip']}/camogm_interface.php?cmd=set_max_frames&max_frames=1000", 'r');
 	    
 	    /*
 	    // start camogm
@@ -246,13 +232,13 @@ if ($run_camogm) {
 }
 
 if ($exit) {
-	for ($i=0;$i<count($cams);$i++) fopen("http://{$cams[$i]['ip']}/camogm_interface.php?cmd=exit", 'r');
+	for ($i=0;$i<count($unique_cams);$i++) fopen("http://{$unique_cams[$i]['ip']}/camogm_interface.php?cmd=exit", 'r');
 }
 
 if ($start) {
 	if ($rec_delay<>0) {
 		// get time from master camera
-		if ($fp = fopen("http://$master_ip/camogm_interface.php?sensor_port=$master_channel&cmd=gettime", 'r')) {
+		if ($fp = fopen("http://{$master['ip']}/camogm_interface.php?sensor_port={$master['channel']}&cmd=gettime", 'r')) {
 			$content = '';
 			while ($line = fread($fp, 1024)) {
 				$content .= $line;
@@ -271,21 +257,21 @@ if ($start) {
 	  //for ($i=0;$i<$n;$i++) fopen("http://".$cam_ip[$i]."/camogm_interface.php?cmd=set_start_after_timestamp&start_after_timestamp=$start_timestamp", 'r');
 	}
 
-	for ($i=0;$i<count($cams);$i++) {
+	for ($i=0;$i<count($unique_cams);$i++) {
             //delayed start?
 	    //file_get_contents("http://$master_ip:$master_port/bimg");
 	    //file_get_contents("http://".$cam_ip[0].":8081/bimg");
-	    fopen("http://{$cams[$i]['ip']}/camogm_interface.php?cmd=start", 'r');
+	    fopen("http://{$unique_cams[$i]['ip']}/camogm_interface.php?cmd=start", 'r');
 	}
 }
 
 if ($stop) {
-	for ($i=0;$i<count($cams);$i++) fopen("http://{$cams[$i]['ip']}/camogm_interface.php?cmd=stop", 'r');
+	for ($i=0;$i<count($unique_cams);$i++) fopen("http://{$unique_cams[$i]['ip']}/camogm_interface.php?cmd=stop", 'r');
 }
 
 if ($mount) {
-	for ($i=0;$i<count($cams);$i++) {
-	    fopen("http://{$cams[$i]['ip']}/camogm_interface.php?cmd=mount&partition=/dev/sda1&mountpoint=/mnt/sda1", 'r');
+	for ($i=0;$i<count($unique_cams);$i++) {
+	    fopen("http://{$unique_cams[$i]['ip']}/camogm_interface.php?cmd=mount&partition=/dev/sda1&mountpoint=/mnt/sda1", 'r');
 	}
 }
 
@@ -297,9 +283,9 @@ if ($unmount) {
 }
 
 if ($get_hdd_space) {
-    for ($i=0;$i<count($cams);$i++) {
+    for ($i=0;$i<count($unique_cams);$i++) {
         //$content = file_get_contents()
-		if ($fp = fopen("http://{$cams[$i]['ip']}/camogm_interface.php?cmd=get_hdd_space&mountpoint=$mount_point", 'r')) {
+		if ($fp = fopen("http://{$unique_cams[$i]['ip']}/camogm_interface.php?cmd=get_hdd_space&mountpoint=$mount_point", 'r')) {
 			$content = '';
 			while ($line = fread($fp, 1024)) {
 				$content .= $line;
@@ -315,7 +301,7 @@ if ($get_hdd_space) {
 	}
         $res_xml = "<?xml version='1.0' standalone='yes'?>\n<camogm_multiple>\n";
 
-	for ($i=0;$i<count($cams);$i++) {
+	for ($i=0;$i<count($unique_cams);$i++) {
 		$res_xml .= "<cam>\n";
 		$res_xml .= "<hdd_free_space>\n";
 		$res_xml .= $message_IP[$i];
@@ -333,8 +319,8 @@ if ($get_hdd_space) {
 }
 
 if ($status) {
-    for ($i=0;$i<count($cams);$i++) {
-        $content = file_get_contents("http://{$cams[$i]['ip']}/camogm_interface.php?cmd=status");
+    for ($i=0;$i<count($unique_cams);$i++) {
+        $content = file_get_contents("http://{$unique_cams[$i]['ip']}/camogm_interface.php?cmd=status");
         $content = substr($content,22);
         $message_IP[$i] = $content;
     }
@@ -343,7 +329,7 @@ if ($status) {
 
     $res_xml = "<?xml version='1.0' standalone='yes'?>\n<camogm_multiple>\n";
 
-    for ($i=0;$i<count($cams);$i++) {
+    for ($i=0;$i<count($unique_cams);$i++) {
         $res_xml .= "<cam>\n";
         $res_xml .= $message_IP[$i];
         $res_xml .= "</cam>\n";
@@ -359,8 +345,8 @@ if ($status) {
 }
 
 if ($run_status) {
-    for ($i=0;$i<count($cams);$i++) {
-        $content = file_get_contents("http://{$cams[$i]['ip']}/camogm_interface.php?cmd=run_status");
+    for ($i=0;$i<count($unique_cams);$i++) {
+        $content = file_get_contents("http://{$unique_cams[$i]['ip']}/camogm_interface.php?cmd=run_status");
         $content = new SimpleXMLElement($content);
         $message_IP[$i] = "\t<camogm_state>".($content->state)."</camogm_state>\n";
     
@@ -368,7 +354,7 @@ if ($run_status) {
 
         $res_xml = "<?xml version='1.0' standalone='yes'?>\n<camogm_multiple>\n";
     }
-    for ($i=0;$i<count($cams);$i++) {
+    for ($i=0;$i<count($unique_cams);$i++) {
         $res_xml .= "<cam>\n";
         $res_xml .= $message_IP[$i];
         $res_xml .= "</cam>\n";

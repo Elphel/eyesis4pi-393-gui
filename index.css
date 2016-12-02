@@ -197,7 +197,7 @@ input{
   padding: 2px;
 }
 
-#close_settings, #close_previews, #close_notice{
+#close_settings, #close_previews {
   width: 18px;
   height: 18px;
   text-align: center;

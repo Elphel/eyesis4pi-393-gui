@@ -1,12 +1,33 @@
 <?php
+/*
+*!***************************************************************************
+*! FILE NAME  : logger_manager.php
+*! DESCRIPTION: command interface for event logger
+*! Copyright (C) 2016 Elphel, Inc.
+*! --------------------------------------------------------------------------
+*!  This program is free software: you can redistribute it and/or modify
+*!  it under the terms of the GNU General Public License as published by
+*!  the Free Software Foundation, either version 3 of the License, or
+*!  (at your option) any later version.
+*!
+*!  This program is distributed in the hope that it will be useful,
+*!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+*!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+*!  GNU General Public License for more details.
+*!
+*!  You should have received a copy of the GNU General Public License
+*!  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*! --------------------------------------------------------------------------
+*/
+
+$cmd = "donothing";
 
 if (isset($_GET['cmd'])) $cmd = $_GET['cmd'];
-else die("-1");
-
 if (isset($_GET['ip'])) $ip = $_GET['ip'];
-else die("-2");
 
-if ($cmd=="start") {
+switch($cmd){
+
+  case "start":
     if (isset($_GET['file'])) $file = $_GET['file'];
     else die("-3");
 
@@ -19,64 +40,76 @@ if ($cmd=="start") {
     if ($fp = fopen("http://$ip/logger_launcher.php?cmd=start&file=$file&index=$index&n=$n", 'r')) 
       die("started");
     else 
-      die("no connection"); 
-
-}
-
-if ($cmd=="stop") {
+      die("no connection");     
+    break;
+    
+  case "stop":
     if ($fp = fopen("http://$ip/logger_launcher.php?cmd=stop", 'r')) 
       die("stopped");
     else 
       die("no connection");
-}
-
-if ($cmd=="mount"){
-
-    if (isset($_GET['device'])) $device = $_GET['device'];
-    else                        $device = "/dev/hda1";
-
-    $fp = fopen("http://$ip/phpshell.php?command=mkdir%20/var/html/CF",'r'); 
-
-    if ($fp = fopen("http://$ip/phpshell.php?command=mount%20$device%20/var/html/CF", 'r')) 
-      die("mounted");
-    else 
-      die("no connection");
-}
-
-if ($cmd=="umount") {
-    //if ($fp = fopen("http://$ip/phpshell.php?command=umount%20/var/html/CF", 'r'))
-    if ($fp = fopen("http://$ip/phpshell.php?command=sync", 'r'))  
+    break;
+    
+  case "mount":
+    // TODO: rename later to symlink
+    $fp = fopen("http://$ip/eyesis4pi_interface.php?cmd=symlink",'r');
+    die("already mounted");
+    break;
+    
+  case "umount":
+    // TODO: remove later or rename to sync
+    if ($fp = fopen("http://$ip/autocampars.py?cmd=shell&include=sync", 'r'))
       die("unmounted");
     else 
       die("no connection");
-}
-
-if ($cmd=="free_space") {
-    if (isset($_GET['mountpoint']))
-	    $mountpoint = $_GET['mountpoint'];
-    else
-	    $mountpoint = '/var/html/CF';
-
-    if ($fp = file_get_contents("http://$ip/camogmgui/camogm_interface.php?cmd=get_hdd_space&mountpoint=$mountpoint")) {
+    break;
+  
+  case "free_space":
+    $mountpoint = '/mnt/sda1';
+    if (isset($_GET['mountpoint'])) $mountpoint = $_GET['mountpoint'];
+    
+    if ($fp = file_get_contents("http://$ip/eyesis4pi_interface.php?cmd=free_space&mountpoint=$mountpoint")){
       die($fp);
     }else{
       die("no connection");
     }
+    break;
+    
+  case "":
+    break;
+    
+  default:
+    die("bad command");
+}
+
+
+if ($cmd=="free_space") {
+  if (isset($_GET['mountpoint']))
+    $mountpoint = $_GET['mountpoint'];
+  else
+    $mountpoint = '/mnt/sda1';
+
+  if ($fp = file_get_contents("http://$ip/camogm_interface.php?cmd=get_hdd_space&mountpoint=$mountpoint")) {
+    die($fp);
+  }else{
+    die("no connection");
+  }
 }
 
 if ($cmd=="clean") {
-    if (isset($_GET['mountpoint']))
-	    $mountpoint = $_GET['mountpoint'];
-    else
-	    $mountpoint = '/var/html/CF';
+  if (isset($_GET['mountpoint']))
+    $mountpoint = $_GET['mountpoint'];
+  else
+    $mountpoint = '/mnt/sda1';
 
-    $fp = fopen("http://$ip/phpshell.php?command=rm%20-r%20/var/html/CF/*",'r'); 
+  //$fp = fopen("http://$ip/phpshell.php?command=rm%20-rf%20/mnt/sda1/*",'r');
+  $fp = fopen("http://$ip/autocampars.py?cmd=shell&include=rm%20-rf%20/mnt/sda1/*",'r');
 }
 
 if ($cmd=="download") {
 
-    $path = "/var/html/CF";
-    $fc = file_get_contents("http://$ip/camogmgui/camogm_interface.php?cmd=list&path=$path");
+    $path = "/mnt/sda1";
+    $fc = file_get_contents("http://$ip/camogm_interface.php?cmd=list&path=$path");
     $xml = new SimpleXMLElement($fc);
     //echo "<pre>";
     $test_arr = $xml->list->f;
@@ -102,9 +135,9 @@ if ($cmd=="scandir") {
     if (isset($_GET['mountpoint']))
 	    $mountpoint = $_GET['mountpoint'];
     else
-	    $mountpoint = '/var/html/CF';
+	    $mountpoint = '/mnt/sda1';
 
-    $fc = file_get_contents("http://$ip/camogmgui/camogm_interface.php?cmd=list&path=$mountpoint");
+    $fc = file_get_contents("http://$ip/camogm_interface.php?cmd=list&path=$mountpoint");
 
     PrintXML($fc);
 }
