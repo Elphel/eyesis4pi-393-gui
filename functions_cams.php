@@ -2,7 +2,7 @@
 
 function get_cams($str){
   $cams = array();
-  $pars = explode(",",$_GET['rq']);
+  $pars = explode(",",$str);
   foreach($pars as $val){
     $ip = strtok($val,":");
     $port = strtok(":");
@@ -43,7 +43,7 @@ function get_unique_cams($cams){
 function cams_to_str($cams){
   $str = "";
   foreach($cams as $cam){
-    $str = implode(":",$cam).",";
+    $str .= implode(":",$cam).",";
   }
   return trim($str,",");
 }

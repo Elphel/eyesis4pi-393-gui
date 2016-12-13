@@ -24,7 +24,7 @@ class x393_downloader:
     self.dl_ssd_switch_timeout = 20 #seconds
     self.dl_blocksize = 20 #Megabytes
     self.dl_blockcount = 50
-    self.dl_chunks = 6
+    self.dl_chunks = 10
     
     #ping and check access
     self.check_connection()
@@ -58,7 +58,9 @@ class x393_downloader:
         rq1 = self.sshcmd+" '"+rq1+"'"
         rq2 = self.sshcmd+" '"+rq2+"'"
       else:
-        rq2 = "sudo "+rq2
+        #rq2 = "sudo "+rq2
+        # don't sudo
+        rq2 = rq2
         
       s1 = self.shout(rq1)
       s2 = self.shout(rq2)

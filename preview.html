@@ -1,14 +1,25 @@
 <html>
 <head>
-    <script src="jquery-1.7.2.min.js" type="text/javascript"></script>
+    <script src="js/jquery-1.7.2.min.js" type="text/javascript"></script>
 
     <script>
 
 	var baseWidth = 2592;
 	var baseHeight = 1948;
 
-// 	var baseWidth = 400;
-// 	var baseHeight = 300;
+	var baseWidth = 200;
+	var baseHeight = 150;
+
+        var cams = [
+          {"ip":"192.168.0.161","port":2326,"channel":3,"master":0,"logger":0},
+          {"ip":"192.168.0.161","port":2325,"channel":2,"master":0,"logger":0},
+          {"ip":"192.168.0.161","port":2323,"channel":0,"master":0,"logger":1},
+          {"ip":"192.168.0.161","port":2324,"channel":1,"master":0,"logger":0},
+          {"ip":"192.168.0.162","port":2326,"channel":3,"master":0,"logger":0},
+          {"ip":"192.168.0.162","port":2325,"channel":2,"master":0,"logger":0},
+          {"ip":"192.168.0.162","port":2323,"channel":0,"master":0,"logger":0},
+          {"ip":"192.168.0.162","port":2324,"channel":1,"master":0,"logger":0}
+        ];
 
 	var cnv;
 	var cContext;
@@ -19,59 +30,46 @@
 	    refresh_images();
 	}
 
-	function refresh_images(){
-	  var d = new Date();
-	  var curr_time = d.getTime();
+        function refresh_images(){
+          var pic = {};
+          
+          cnv.setAttribute('width',baseHeight*8);cnv.setAttribute('height',baseWidth*3);
 
-	  var pic = new Object();
-	  
-	  cnv.setAttribute('width',baseHeight*8);cnv.setAttribute('height',baseWidth*3);
+          for(var i=0;i<cams.length;i++){
+            pic[i] = new Image();
+            pic[i].src = "http://"+cams[i].ip+":"+cams[i].port+"/bimg?"+Date.now();
+            pic[i].index = i;
+            pic[i].onload = function(){
+              draw_an_image(this);
+            };
+          }
+        }
 
-	  //cContext.save();
+        function draw_an_image(img){
+          var w = baseWidth;
+          var h = baseHeight;
+          var W = 2592;
+          var H = 1944;
 
-	  for(i=0;i<8;i++) {
-	    pic[i] = new Image();
-	    //add ip increment here
-	    pic[i].src="http://192.168.0.22"+(i+1)+":8081/bimg?"+curr_time;
-	    pic[i].index = i;
-
-	    pic[i].onload = function(){
-
-	      //cContext.restore();
-
-	      cContext.rotate(90*Math.PI/180);
-	      
-	      var k = 3;
-	      
-	      if ((this.index==0)||(this.index==1)||(this.index==7)) k = 3;
-	      
-	      if (this.index%2==0) {
-		  //cContext.drawImage(this,  0,-baseHeight,baseWidth,baseHeight*k);
-		  cContext.drawImage(this, 0, 0*baseHeight, baseWidth, baseHeight,  0*baseWidth, -baseHeight*(1+this.index), baseWidth, baseHeight);
-		  cContext.drawImage(this, 0, 1*baseHeight, baseWidth, baseHeight,  1*baseWidth, -baseHeight*(1+this.index), baseWidth, baseHeight);
-		  //for those who has 3 images
-		  if (k==3) {
-		      cContext.scale(-1,1);
-		      cContext.drawImage(this, 0, 2*baseHeight, baseWidth, baseHeight, -3*baseWidth, -baseHeight*(1+this.index), baseWidth, baseHeight);
-		      cContext.scale(-1,1);
-		  }
-		  cContext.rotate(-90*Math.PI/180);
-	      }else{
- 		  cContext.scale(1,-1); //mirror is needed
-		  cContext.drawImage(this, 0, 0*baseHeight, baseWidth, baseHeight,  0*baseWidth, baseHeight*(this.index), baseWidth, baseHeight);
-		  cContext.drawImage(this, 0, 1*baseHeight, baseWidth, baseHeight,  1*baseWidth, baseHeight*(this.index), baseWidth, baseHeight);
-		  //for those who has 3 images
-		  if (k==3) {
-		      cContext.scale(-1,1);
-		      cContext.drawImage(this, 0, 2*baseHeight, baseWidth, baseHeight, -3*baseWidth, baseHeight*(this.index), baseWidth, baseHeight);
-		      cContext.scale(-1,1);
-		  }
- 		  cContext.scale(1,-1); //mirror is needed
-		  cContext.rotate(-90*Math.PI/180);
-	      }      
-	    }
- 	  }
-	}
+          cContext.rotate(90*Math.PI/180);
+          
+          if (img.index%2==0) {
+            cContext.drawImage(img, 0,0*H,W,H, 0*w,-1*h*(img.index+1),w,h);
+            cContext.drawImage(img, 0,1*H,W,H, 1*w,-1*h*(img.index+1),w,h);
+            cContext.scale(-1,1);
+            cContext.drawImage(img, 0,2*H,W,H, -3*w, -1*h*(img.index+1), w, h);
+            cContext.scale(-1,1);
+          }else{
+            cContext.scale(1,-1); //mirror is needed
+            cContext.drawImage(img, 0,0*H,W,H, 0*w,img.index*h,w,h);
+            cContext.drawImage(img, 0,1*H,W,H, 1*w,img.index*h,w,h);
+            cContext.scale(-1,1);
+            cContext.drawImage(img, 0,2*H,W,H, -3*w,h*(img.index),w,h);
+            cContext.scale(-1,-1);
+          }
+          
+          cContext.rotate(-90*Math.PI/180);
+        }
 
     </script>
 

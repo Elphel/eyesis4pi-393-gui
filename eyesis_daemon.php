@@ -81,8 +81,8 @@ if (!$socket) {
 	system("killall -9 recorder.php");
 	$ci = $interval*100000;
 	
-	$fp = fopen("http://{$master['ip']}/camogmgui/camogm_interface.php?sensor_port=$master_channel&cmd=set_parameter&pname=TRIG_PERIOD&pvalue=".($ci+1), 'r');
-	$fp = fopen("http://{$master['ip']}/camogmgui/camogm_interface.php?sensor_port=$master_channel&cmd=set_parameter&pname=TRIG_PERIOD&pvalue=".($ci), 'r');
+	$fp = fopen("http://{$master['ip']}/camogm_interface.php?sensor_port={$master['channel']}&cmd=set_parameter&pname=TRIG_PERIOD&pvalue=".($ci+1), 'r');
+	$fp = fopen("http://{$master['ip']}/camogm_interface.php?sensor_port={$master['channel']}&cmd=set_parameter&pname=TRIG_PERIOD&pvalue=".($ci), 'r');
 	
 	$status = "idle";
     }
@@ -114,14 +114,12 @@ if (!$socket) {
 
     //if ($status=="running") {
     if ($cmd=="start") {
-
-	echo "$ip $n $interval $mask $footage_root_path $footage_subfolder";
-
+	//echo cams_to_str($cams)." $interval $mask $footage_root_path $footage_subfolder";
 	$footage_index = update_subsubdir("$footage_root_path/$footage_subfolder",$footage_index,$footage_file_limit,$index_max=1);
 	if ($footage_index>=0) {
-	    passthru("./recorder.php '".cams_to_str($cams)."' $interval $mask $footage_root_path $footage_subfolder $footage_file_limit $footage_index > /dev/null 2>&1 &");
+            $str = "./recorder.php '".cams_to_str($cams)."' $interval $mask $footage_root_path $footage_subfolder $footage_file_limit $footage_index >> /dev/null 2>&1 &";
+	    passthru($str);
 	}
-
     }
 
     $cmd = "";

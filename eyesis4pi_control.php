@@ -26,7 +26,7 @@
 *!  $Log: eyesis4pi_controls.php,v $
 */
 
-// Check location - should be launched on the PC websrver
+// Check location - should be launched on the PC webserver
 $elp_const=get_defined_constants(true);
 
 ini_set('display_errors', 1);
@@ -63,7 +63,8 @@ $start = false;
 $stop = false;
 $mount = false;
 $unmount = false;
-$get_hdd_space = false;
+$get_free_space = false;
+$get_temperature = false;
 $status = false;
 $exit = false;
 $run_status = false;
@@ -103,8 +104,10 @@ foreach($_GET as $key=>$value) {
 		case "mount"           : $mount=true; break;
 		case "unmount"         : $unmount=true; break;
 		
-		case "get_hdd_space"   : $get_hdd_space=true; break;
+		case "get_free_space"  : $get_free_space=true; break;
 		case "mount_point"     : $mount_point = $value; break;
+		
+		case "get_temperature" : $get_temperature=true;break;
 		
 		//case "debug"           : $debug = $value; break;
 		case "debuglev"        : $debuglev = $value+0; break;
@@ -140,6 +143,7 @@ if ($set_parameter) {
   }
   $res_xmls = curl_multi_finish(curl_multi_start($rqs),false);  
   $res_xml = implode("",$res_xmls);
+  $res_xml = "<?xml version='1.0'?>\n<Document>\n$res_xml</Document>\n";
   
   header("Content-Type: text/xml");
   header("Content-Length: ".strlen($res_xml)."\n");
@@ -157,6 +161,7 @@ if ($get_parameter) {
   }
   $res_xmls = curl_multi_finish(curl_multi_start($rqs),false);  
   $res_xml = implode("",$res_xmls);
+  $res_xml = "<?xml version='1.0'?>\n<Document>\n$res_xml</Document>\n";
 
   header("Content-Type: text/xml");
   header("Content-Length: ".strlen($res_xml)."\n");
@@ -164,6 +169,23 @@ if ($get_parameter) {
   printf("%s", $res_xml);
   flush();
 
+}
+
+if ($get_temperature) {
+  $rqs = array();
+  foreach($unique_cams as $cam){
+    $rqstr = "http://{$cam['ip']}/hwmon.php?cmd=t";
+    array_push($rqs,$rqstr);
+  }
+  $res_xmls = curl_multi_finish(curl_multi_start($rqs),false);  
+  $res_xml = "<result>".implode("</result><result>",$res_xmls)."</result>";
+  $res_xml = "<?xml version='1.0'?>\n<Document>\n$res_xml</Document>\n";
+
+  header("Content-Type: text/xml");
+  header("Content-Length: ".strlen($res_xml)."\n");
+  header("Pragma: no-cache\n");
+  printf("%s", $res_xml);
+  flush();
 }
 
 //CAMOGM
@@ -177,14 +199,27 @@ if ($run_camogm) {
 	    
 	    // set debug level
 	    fopen("http://{$unique_cams[$i]['ip']}/camogm_interface.php?cmd=set_debuglev&debuglev=$debuglev", 'r');
-	    // set "/var/0" prefix
-	    //fopen("http://{$cams[$i]['ip']}/camogm_interface.php?cmd=set_prefix&prefix=/var/html/CF/", 'r');
-            // default path
+	    
+	    // set "/var/0" prefix - FORMATTED PARTITION
+	    
+	    /*
+	    fopen("http://{$unique_cams[$i]['ip']}/camogm_interface.php?cmd=set_prefix&prefix=/mnt/sda1/", 'r');
+	    fopen("http://{$unique_cams[$i]['ip']}/camogm_interface.php?cmd=setrawdevpath&path=", 'r');
+	    fopen("http://{$unique_cams[$i]['ip']}/camogm_interface.php?cmd=setmov", 'r');
+	    */
+	    
 	    fopen("http://{$unique_cams[$i]['ip']}/camogm_interface.php?cmd=setrawdevpath&path=/dev/sda2", 'r');
+	    fopen("http://{$unique_cams[$i]['ip']}/camogm_interface.php?cmd=setjpeg", 'r');
+	    
+	    
+            // default path UNFORMATTED PARTITION
+	    //fopen("http://{$unique_cams[$i]['ip']}/camogm_interface.php?cmd=setrawdevpath&path=/dev/sda2", 'r');
+	    
 	    //mount
 	    //fopen("http://{$cams[$i]['ip']}/camogm_interface.php?cmd=mount&partition=/dev/hda1&mountpoint=/var/html/CF", 'r');
 	    // set .mov format
-	    fopen("http://{$unique_cams[$i]['ip']}/camogm_interface.php?cmd=setjpeg", 'r');
+	    
+	    //fopen("http://{$unique_cams[$i]['ip']}/camogm_interface.php?cmd=setjpeg", 'r');
 	    // set frames_per_chunk in exif to 1
 	    fopen("http://{$unique_cams[$i]['ip']}/camogm_interface.php?cmd=set_frames_per_chunk&frames_per_chunk=1", 'r');
 	    // set default split parameters
@@ -282,40 +317,31 @@ if ($unmount) {
 	}
 }
 
-if ($get_hdd_space) {
-    for ($i=0;$i<count($unique_cams);$i++) {
-        //$content = file_get_contents()
-		if ($fp = fopen("http://{$unique_cams[$i]['ip']}/camogm_interface.php?cmd=get_hdd_space&mountpoint=$mount_point", 'r')) {
-			$content = '';
-			while ($line = fread($fp, 1024)) {
-				$content .= $line;
-			}
+if ($get_free_space) {
+  
+  $rqs = array();
+  foreach($unique_cams as $cam){
+    $rqstr = "http://{$cam['ip']}/eyesis4pi_interface.php?cmd=free_space";
+    array_push($rqs,$rqstr);
+  }
+  $hnd = curl_multi_start($rqs);
+  $res_xmls = curl_multi_finish($hnd,false);
+  
+  /*
+  $res_xmls = array();
+  foreach($unique_cams as $cam){
+    $rqstr = file_get_contents("http://{$cam['ip']}/eyesis4pi_interface.php?cmd=free_space");
+    array_push($res_xmls,$rqstr);
+  }  
+  */
+  $res_xml = implode("",$res_xmls);
+  $res_xml = "<?xml version='1.0'?>\n<Document>\n$res_xml</Document>\n";
 
-			$xml = new SimpleXMLElement($content);
-			$free_space = $xml -> get_hdd_space;
-			$message_IP[$i] = $free_space;
-		} else {
-			$message_IP[$i] = "no connection";
-		}
-		
-	}
-        $res_xml = "<?xml version='1.0' standalone='yes'?>\n<camogm_multiple>\n";
-
-	for ($i=0;$i<count($unique_cams);$i++) {
-		$res_xml .= "<cam>\n";
-		$res_xml .= "<hdd_free_space>\n";
-		$res_xml .= $message_IP[$i];
-		$res_xml .= "</hdd_free_space>\n";
-		$res_xml .= "</cam>\n";
-	}
-
-	$res_xml .= "</camogm_multiple>\n";
-
-	header("Content-Type: text/xml");
-	header("Content-Length: ".strlen($res_xml)."\n");
-	header("Pragma: no-cache\n");
-	printf("%s", $res_xml);
-	flush();
+  header("Content-Type: text/xml");
+  header("Content-Length: ".strlen($res_xml)."\n");
+  header("Pragma: no-cache\n");
+  printf("%s", $res_xml);
+  flush();
 }
 
 if ($status) {

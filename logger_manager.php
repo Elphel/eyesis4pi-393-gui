@@ -75,13 +75,43 @@ switch($cmd){
     }
     break;
     
-  case "":
+  case "scandir":
+    $mountpoint = '/mnt/sda1';
+    if (isset($_GET['mountpoint'])) $mountpoint = $_GET['mountpoint'];
+
+    $fc = file_get_contents("http://$ip/camogm_interface.php?cmd=list&path=$mountpoint");
+
+    PrintXML($fc);
     break;
+  case "download":
+    //$path = "/mnt/sda1";
+    $path = "/www/pages/ssd";
+    $html_path = "ssd";
     
+    file_get_contents("http://$ip/eyesis4pi_interface.php?cmd=symlink");
+    
+    $fc = file_get_contents("http://$ip/camogm_interface.php?cmd=list&path=$path");
+    $xml = new SimpleXMLElement($fc);
+    $test_arr = $xml->list->f;
+
+    foreach($test_arr as $elem) {
+      if (isset($_GET['destination']))
+        $destination = $_GET['destination'];
+      else
+        $destination = 'data/footage';
+      $filename = substr($elem,strrpos($elem,"/")-strlen($elem)+1);
+      exec("wget http://$ip/$html_path/$filename -O $destination/$filename");
+    }
+    break;
+  case "clean":
+    file_get_contents("http://$ip/autocampars.py?cmd=shell&include=rm%20-rf%20/mnt/sda1/*");
+    die("ok");
+    break;
   default:
     die("bad command");
 }
 
+die(0);
 
 if ($cmd=="free_space") {
   if (isset($_GET['mountpoint']))
@@ -94,16 +124,6 @@ if ($cmd=="free_space") {
   }else{
     die("no connection");
   }
-}
-
-if ($cmd=="clean") {
-  if (isset($_GET['mountpoint']))
-    $mountpoint = $_GET['mountpoint'];
-  else
-    $mountpoint = '/mnt/sda1';
-
-  //$fp = fopen("http://$ip/phpshell.php?command=rm%20-rf%20/mnt/sda1/*",'r');
-  $fp = fopen("http://$ip/autocampars.py?cmd=shell&include=rm%20-rf%20/mnt/sda1/*",'r');
 }
 
 if ($cmd=="download") {

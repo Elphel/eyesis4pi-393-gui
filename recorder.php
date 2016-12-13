@@ -5,13 +5,12 @@ include 'filesystem.php';
 include 'functions_cams.php';
 
 $cams_str   = $argv[1];
-$n          = $argv[2];
-$interval   = $argv[3]*1000;
-$mask       = $argv[4];
-$root_path  = $argv[5];
-$subfolder  = $argv[6];
-$file_limit = $argv[7];
-$index      = $argv[8];
+$interval   = $argv[2]*1000;
+$mask       = $argv[3];
+$root_path  = $argv[4];
+$subfolder  = $argv[5];
+$file_limit = $argv[6];
+$index      = $argv[7];
 
 $cams = array();
 $master = array();
@@ -23,7 +22,7 @@ if ($mask=="0x1ff") $skip = false;
 else                $skip = true;
 */
 $skip = false;
-$odd = false;
+$odd = true;
 
 while(true) {
 
@@ -36,7 +35,7 @@ while(true) {
 	//$odd = !$odd;
     }
 
-    fopen("http://{$master['ip']}:{$master['port']}/trig/pointers");
+    file_get_contents("http://{$master['ip']}:{$master['port']}/trig/pointers");
 
     //usleep(1000);
     if ($odd) {
@@ -44,7 +43,7 @@ while(true) {
       $path = "$root_path/$subfolder/$index";
       //system("./images.sh $ip $n $path &");
       for($i=0;$i<count($cams);$i++){
-          exec("./get_image.sh \"{$cams[$i]['ip']}:{$cams[$i]['port']}/bimg\" \"${path}\" \"${i}.jp4\" \"${i}.log\" \"${i}\"> /dev/null 2>&1 &");
+          system("./get_image.sh \"{$cams[$i]['ip']}:{$cams[$i]['port']}/bimg\" \"${path}\" \"${i}.jp4\" \"${i}.log\" \"${i}\">/dev/null 2>&1 &");
       }
     }
 

@@ -55,8 +55,11 @@ function curl_multi_finish($data, $use_xml=true, $ntry=0, $echo = false) {
 			do {
 				$curl_mrc = curl_multi_exec ($curl_mh, $curl_active);
 			} while ($curl_mrc == CURLM_CALL_MULTI_PERFORM );
+		}else{
+                  break;
 		}
 		//if ($echo) echo colorize("$curl_active ",'YELLOW',1);
+		
 		$nrep++;
 		if ($ntry && ($nrep > $ntry)) {
 			break;
@@ -79,12 +82,25 @@ function curl_multi_finish($data, $use_xml=true, $ntry=0, $echo = false) {
 	} else {
 		foreach ($data['handles'] as $i => $ch) {
 			$r = curl_multi_getcontent ($ch);
+			// cut xml header
+			$r = trim_xml_head($r);
 			curl_multi_remove_handle ($curl_mh, $ch);
 			$results[] = $r;
 		}
 	}
 	curl_multi_close ($curl_mh);
 	return $results;
+}
+
+function trim_xml_head($str){
+  $i0 = strpos($str,"<?");
+  $i1 = strpos($str,"?>");
+  
+  if (($i0==0)&&($i1>0)){
+    $str = substr($str,$i1+3);
+    return $str;
+  }else
+    return $str;
 }
 
 ?>
