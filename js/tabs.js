@@ -89,8 +89,8 @@ function tab1_init(mode){
 // TAB 2: begin
 function white_balance_sliders_init(){  
   
+    $( "#env_radio" ).buttonset();
     $( "#ae_radio" ).buttonset();
-  
     $( "#radio" ).buttonset();
 
     $( "#red" ).slider({
@@ -166,6 +166,26 @@ function set_default_gains(light) {
 
     moveslider();
     //set_gains();
+}
+
+function set_environment(mode){
+  if      (mode=="sunny"){
+    $("#ae_radio1").click();
+    $("#radio1").click();
+    
+    $("#input_autoexp_lvl").val(220);
+    $("#input_autoexp_fracpix").val(98);
+    
+  }else if(mode=="cloudy"){
+    $("#ae_radio3").click();
+    $("#radio2").click();
+    
+    $("#input_autoexp_lvl").val(180);
+    $("#input_autoexp_fracpix").val(90);
+  }
+  set_autoexp_level(false);
+  set_autoexp_fracpix(false);
+  
 }
 
 function set_ae_window(mode){

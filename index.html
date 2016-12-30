@@ -169,7 +169,7 @@
 		<!--Maximum autoexposure-->
 		<tr>
 		    <td><div class="fixed_height" >AutoExp max, <span style="font-size:0.7em">ms</span></div></td>
-		    <td><div class="fixed_height" ><input type="text" id="input_autoexp_max" style="width:80px;" value="1" class="settings_pars"></div></td>
+		    <td><div class="fixed_height" ><input type="text" id="input_autoexp_max" style="width:80px;" value="2" class="settings_pars"></div></td>
 		    <td align="center"><input type="checkbox" id="chk_autoexp_max" class="apply_checkboxes"></td>
 		</tr>
 		<!--Autoexposure level-->
@@ -202,8 +202,17 @@
 		</tr>
 	    </table>
 	    <br/>
+            <div>
+              <div>Environment conditions:</div>
+              <div id="env_radio">
+                  <input type="radio" id="env_radio1" name="env_radio" onclick="set_environment('sunny')" checked="checked" /><label for="env_radio1">sunny</label>
+                  <input type="radio" id="env_radio2" name="env_radio" onclick="set_environment('cloudy')" /><label for="env_radio2">cloudy</label>
+                  <!--<input type="radio" id="env_radio3" name="env_radio" onclick="set_environment('fluorescent')" /><label for="env_radio3">fluorescent</label>-->
+              </div>              
+            </div>
+	    <br/>
 	    <div>
-              <div>AutoExp window</div>
+              <div>AutoExp window:</div>
               <div id="ae_radio">
                   <input type="radio" id="ae_radio1" name="ae_radio" onclick="set_ae_window('all')" checked="checked" /><label for="ae_radio1">all</label>
                   <input type="radio" id="ae_radio2" name="ae_radio" onclick="set_ae_window('center top')" /><label for="ae_radio2">center top</label>
