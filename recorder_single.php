@@ -42,7 +42,7 @@ if ($fp = simplexml_load_file("http://{$master['ip']}:{$master['port']}/trig/poi
     //elphel_set_P_value(2,ELPHEL_TRIG_PERIOD,0,ELPHEL_CONST_FRAME_IMMED);
     //usleep(200000);
     //elphel_set_P_value(2,ELPHEL_TRIG_PERIOD,1,ELPHEL_CONST_FRAME_IMMED);
-    
+    usleep(200000);
     //$system_status = system("./images.sh $ip $n $path");
     for($i=0;$i<count($cams);$i++){
         exec("./get_image.sh \"{$cams[$i]['ip']}:{$cams[$i]['port']}/bimg\" \"${path}\" \"${i}.jp4\" \"${i}.log\" \"${i}\"> /dev/null 2>&1 &");
