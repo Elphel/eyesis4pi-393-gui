@@ -24,7 +24,7 @@ class x393_downloader:
     self.dl_ssd_switch_timeout = 20 #seconds
     self.dl_blocksize = 20 #Megabytes
     self.dl_blockcount = 50
-    self.dl_chunks = 10
+    self.dl_chunks = 70
     
     #ping and check access
     self.check_connection()

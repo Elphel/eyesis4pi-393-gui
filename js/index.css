@@ -32,7 +32,7 @@ input{
 
 #settings {
   width:850;
-  height:650;
+  height:687;
   background:rgba(180,180,180,0.95);
   /*color: white;*/
   position:absolute;
@@ -150,7 +150,7 @@ input{
 .tabs_contents{
   padding:10px;
   width:840px;
-  height:613px;
+  height:650px;
   background:rgba(230,230,230,0.95);
   position:absolute;
   top:32px;
@@ -209,7 +209,7 @@ input{
   -moz-border-radius: 9px;
 }
 
-#radio {
+#radio, #ae_radio {
   padding: 5px;
   font-size: 10px;
 }

@@ -38,14 +38,25 @@ if (!is_dir($path)) {
 }
 
 if ($fp = simplexml_load_file("http://{$master['ip']}:{$master['port']}/trig/pointers")) {
+
+    //elphel_set_P_value(2,ELPHEL_TRIG_PERIOD,0,ELPHEL_CONST_FRAME_IMMED);
+    //usleep(200000);
+    //elphel_set_P_value(2,ELPHEL_TRIG_PERIOD,1,ELPHEL_CONST_FRAME_IMMED);
+    
     //$system_status = system("./images.sh $ip $n $path");
     for($i=0;$i<count($cams);$i++){
         exec("./get_image.sh \"{$cams[$i]['ip']}:{$cams[$i]['port']}/bimg\" \"${path}\" \"${i}.jp4\" \"${i}.log\" \"${i}\"> /dev/null 2>&1 &");
     }
     //why fopen?
-    $add_str = "http://{$master['ip']}/camogmgui/camogm_interface.php?cmd=set_parameter&pname=TRIG_PERIOD&pvalue=";
-    $fp = fopen($addr_str.($period+1)."&sensor_port={$master['channel']}", 'r');
-    $fp = fopen($addr_str.($period+1)."&sensor_port={$master['channel']}", 'r');
+    //$add_str = "http://{$master['ip']}/camogm_interface.php?cmd=set_parameter&pname=TRIG_PERIOD&pvalue=";
+    $addr_str = "http://{$master['ip']}/parsedit.php?immediate&TRIG_PERIOD=";
+    $fp = fopen($addr_str.($period+1)."*-2&sensor_port={$master['channel']}", 'r');
+    $fp = fopen($addr_str.($period)."*-2&sensor_port={$master['channel']}", 'r');
+    
+    //printf($addr_str.($period+1)."*-2&sensor_port={$master['channel']}");
+    
+    //elphel_set_P_value(2,ELPHEL_TRIG_PERIOD,100000000,ELPHEL_CONST_FRAME_IMMED);
+    
     //$fp = fopen("http://192.168.0.221:8081/trig/pointers",'r');
     //$fp = fopen("http://192.168.0.221:8081/trig/pointers",'r');
     //$fp = fopen("http://192.168.0.221:8081/trig/pointers",'r');

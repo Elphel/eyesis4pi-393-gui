@@ -88,6 +88,9 @@ function tab1_init(mode){
 
 // TAB 2: begin
 function white_balance_sliders_init(){  
+  
+    $( "#ae_radio" ).buttonset();
+  
     $( "#radio" ).buttonset();
 
     $( "#red" ).slider({
@@ -146,20 +149,52 @@ function set_default_gains(light) {
       $("#red_gain").val(2.82);
       $("#green_gain").val(2);
       $("#blue_gain").val(2.45);
+      set_ae_window("all");
     }
     if (light=="cloudy") {
       $("#red_gain").val(2.82);
       $("#green_gain").val(2);
       $("#blue_gain").val(2.45);
+      set_ae_window("center bot");
     }
     if (light=="fluorescent") {
       $("#red_gain").val(2.15);
       $("#green_gain").val(2);
       $("#blue_gain").val(3.82);
+      set_ae_window("all");
     }
 
     moveslider();
     //set_gains();
+}
+
+function set_ae_window(mode){
+  if      (mode=="all"){
+    set_parameter(master_ip,'HISTWND_RLEFT'  ,65535,false);
+    set_parameter(master_ip,'HISTWND_RTOP'   ,32768,false);
+    set_parameter(master_ip,'HISTWND_RWIDTH' ,49152,false);
+    set_parameter(master_ip,'HISTWND_RHEIGHT',65535,false);
+  }else if(mode=="center top"){
+    set_parameter(master_ip,'HISTWND_RLEFT'  ,    0,false);
+    set_parameter(master_ip,'HISTWND_RTOP'   ,35967,false);
+    set_parameter(master_ip,'HISTWND_RWIDTH' ,30265,false);
+    set_parameter(master_ip,'HISTWND_RHEIGHT',19672,false);
+  }else if(mode=="center bot"){
+    set_parameter(master_ip,'HISTWND_RLEFT'  ,65536,false);
+    set_parameter(master_ip,'HISTWND_RTOP'   ,36769,false);
+    set_parameter(master_ip,'HISTWND_RWIDTH' ,30265,false);
+    set_parameter(master_ip,'HISTWND_RHEIGHT',19672,false);
+  }else if(mode=="top"){
+    set_parameter(master_ip,'HISTWND_RLEFT'  ,65536,false);
+    set_parameter(master_ip,'HISTWND_RTOP'   , 3700,false);
+    set_parameter(master_ip,'HISTWND_RWIDTH' ,63000,false);
+    set_parameter(master_ip,'HISTWND_RHEIGHT',16878,false);
+  }else if(mode=="bot"){
+    set_parameter(master_ip,'HISTWND_RLEFT'  ,65536,false);
+    set_parameter(master_ip,'HISTWND_RTOP'   ,65536,false);
+    set_parameter(master_ip,'HISTWND_RWIDTH' ,63000,false);
+    set_parameter(master_ip,'HISTWND_RHEIGHT',16878,false);
+  }
 }
 
 function set_gains(color) {

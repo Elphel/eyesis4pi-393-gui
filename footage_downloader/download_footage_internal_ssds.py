@@ -21,13 +21,13 @@ usage = """Help:
 
 if len(sys.argv)>1:
   print("Downloading footage from Eyesis4Pi internal SSDs to "+sys.argv[1])
-  
+  if not os.path.isdir(""):
 else:
   print usage
   
 sys.exit()
 
-C1 = x393_downloader.x393_downloader(ip="192.168.0.163")
+C1 = x393_downloader.x393_downloader(ip="192.168.0.161")
 #C1.get_serialno("local")
 C1.download()
 

@@ -55,6 +55,7 @@ function restore_settings(text,which){
 	  
 	  $('#radio1').click();
 	  $('#radio').button("refresh");
+          $('#ae_radio').button("refresh");
       }
       
 }
