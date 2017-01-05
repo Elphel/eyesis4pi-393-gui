@@ -246,12 +246,23 @@ function tab3_init(){
   
   c += "<div style='padding:5px;'><b>Temperatures:</b></div><div id='temperatures_map'></div>";
   
-  c += "<br/><div><button id='other_reboot' title='System reboot'>Reboot</button>&nbsp;<button title='reset raw partitions write pointers' id='other_reset_rec'>Reset REC</button></div>";
+  c += "<br/><b>Recording:</b><div>";
   
+  c += "<button title='set recording to file system (/mnt/sda1)' id='other_norm_rec'>Normal REC</button>";
+  c += "<button title='set recording to raw partitions (/dev/sda2)' id='other_fast_rec'>Fast REC</button>";
+  c += "<button title='reset raw partitions write pointers' id='other_reset_rec'>Reset Fast REC</button>";
+  
+  c +="</div>";
+  
+  c += "<br/><b>System:</b><div><button id='other_reboot' title='System reboot'>Reboot</button></div>";
+    
   $("#tab3_contents").html(c);
   
   $("#other_reboot").on("click",system_reboot);
   $("#other_reset_rec").on("click",system_reset_rec);
+  
+  $("#other_fast_rec").on("click",system_fast_rec);
+  $("#other_norm_rec").on("click",system_norm_rec);
   
 }
 // TAB 3: end
@@ -270,6 +281,28 @@ function system_reboot(){
 function system_reset_rec(){
   console.log("system reset rec");
   var url = "eyesis4pi_control.php?reset_rec&rq="+cams_to_str();
+  $.ajax({
+    url: url,
+    success: function(data){
+      console.log(data);
+    }
+  });
+}
+
+function system_fast_rec(){
+  console.log("system fast rec");
+  var url = "eyesis4pi_control.php?fast_rec&rq="+cams_to_str();
+  $.ajax({
+    url: url,
+    success: function(data){
+      console.log(data);
+    }
+  });
+}
+
+function system_norm_rec(){
+  console.log("system norm rec");
+  var url = "eyesis4pi_control.php?norm_rec&rq="+cams_to_str();
   $.ajax({
     url: url,
     success: function(data){
