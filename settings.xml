@@ -10,7 +10,7 @@
 <input_quality>98</input_quality>
 <input_trigger_period>200</input_trigger_period>
 <input_hdrvexpos>0x36000</input_hdrvexpos>
-<input_autoexp_max>2</input_autoexp_max>
+<input_autoexp_max>1</input_autoexp_max>
 <input_autoexp_lvl>220</input_autoexp_lvl>
 <input_autoexp_fracpix>98</input_autoexp_fracpix>
 <input_autoexp_frames_ahead>1</input_autoexp_frames_ahead>

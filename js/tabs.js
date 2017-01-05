@@ -245,10 +245,38 @@ function tab3_init(){
   c += "</table>";
   
   c += "<div style='padding:5px;'><b>Temperatures:</b></div><div id='temperatures_map'></div>";
-    
+  
+  c += "<br/><div><button id='other_reboot' title='System reboot'>Reboot</button>&nbsp;<button title='reset raw partitions write pointers' id='other_reset_rec'>Reset REC</button></div>";
+  
   $("#tab3_contents").html(c);
+  
+  $("#other_reboot").on("click",system_reboot);
+  $("#other_reset_rec").on("click",system_reset_rec);
+  
 }
 // TAB 3: end
+
+function system_reboot(){
+  console.log("system reboot");
+  var url = "eyesis4pi_control.php?reboot&rq="+cams_to_str();
+  $.ajax({
+    url: url,
+    success: function(data){
+      console.log(data);
+    }
+  });
+}
+
+function system_reset_rec(){
+  console.log("system reset rec");
+  var url = "eyesis4pi_control.php?reset_rec&rq="+cams_to_str();
+  $.ajax({
+    url: url,
+    success: function(data){
+      console.log(data);
+    }
+  });
+}
 
 function previews_init(){
   

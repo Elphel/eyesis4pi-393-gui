@@ -69,6 +69,12 @@ $status = false;
 $exit = false;
 $run_status = false;
 
+$rec_fast = false;
+$rec_norm = false;
+
+$rec_reset = false;
+$system_reboot = false;
+
 // keys assign
 foreach($_GET as $key=>$value) {
 	switch($key) {
@@ -86,6 +92,8 @@ foreach($_GET as $key=>$value) {
 		case "test"            : $test=true; break;
 		
 		case "run_camogm"      : $run_camogm = true; break;
+		case "fast_rec"        : $rec_fast = true; break;
+		case "norm_rec"        : $rec_norm = true; break;
 		case "exit"            : $exit = true; break;
 		case "start"           : $start = true; break;
 		case "stop"            : $stop = true; break;
@@ -103,6 +111,9 @@ foreach($_GET as $key=>$value) {
 
 		case "mount"           : $mount=true; break;
 		case "unmount"         : $unmount=true; break;
+		
+		case "reboot"          : $system_reboot = true;break;
+		case "reset_rec"       : $rec_reset = true;break;
 		
 		case "get_free_space"  : $get_free_space=true; break;
 		case "mount_point"     : $mount_point = $value; break;
@@ -188,6 +199,30 @@ if ($get_temperature) {
   flush();
 }
 
+if ($system_reboot){
+  print(file_get_contents("http://{$master['ip']}/autocampars.php?reboot"));
+}
+
+if ($rec_reset){
+  for ($i=0;$i<count($unique_cams);$i++) {
+    file_get_contents("http://{$unique_cams[$i]['ip']}/eyesis4pi_interface.php?cmd=reset_camogm_fastrec", 'r');
+  }
+  print("ok");
+}
+
+# presets for recording to a file system
+function set_normal_recording($ip){
+  fopen("http://{$ip}/camogm_interface.php?cmd=set_prefix&prefix=/mnt/sda1/", 'r');
+  fopen("http://{$ip}/camogm_interface.php?cmd=setrawdevpath&path=/dev/", 'r');
+  fopen("http://{$ip}/camogm_interface.php?cmd=setmov", 'r');
+}
+
+# preset for fast recording to a raw formatted partition
+function set_fast_recording($ip){
+  fopen("http://{$ip}/camogm_interface.php?cmd=setrawdevpath&path=/dev/sda2", 'r');
+  fopen("http://{$ip}/camogm_interface.php?cmd=setjpeg", 'r');
+}
+
 //CAMOGM
 if ($run_camogm) {
 	for ($i=0;$i<count($unique_cams);$i++) {
@@ -204,14 +239,16 @@ if ($run_camogm) {
 	    
 	    /*
 	    fopen("http://{$unique_cams[$i]['ip']}/camogm_interface.php?cmd=set_prefix&prefix=/mnt/sda1/", 'r');
-	    fopen("http://{$unique_cams[$i]['ip']}/camogm_interface.php?cmd=setrawdevpath&path=", 'r');
+	    fopen("http://{$unique_cams[$i]['ip']}/camogm_interface.php?cmd=setrawdevpath&path=/dev/", 'r');
 	    fopen("http://{$unique_cams[$i]['ip']}/camogm_interface.php?cmd=setmov", 'r');
 	    */
 	    
+	    set_fast_recording($unique_cams[$i]['ip']);
+	    
+	    /*
 	    fopen("http://{$unique_cams[$i]['ip']}/camogm_interface.php?cmd=setrawdevpath&path=/dev/sda2", 'r');
 	    fopen("http://{$unique_cams[$i]['ip']}/camogm_interface.php?cmd=setjpeg", 'r');
-	    
-	    
+	    */
             // default path UNFORMATTED PARTITION
 	    //fopen("http://{$unique_cams[$i]['ip']}/camogm_interface.php?cmd=setrawdevpath&path=/dev/sda2", 'r');
 	    
@@ -264,6 +301,18 @@ if ($run_camogm) {
 	    //fopen("http://{$cams[$i]['ip']}/camogm_interface.php?cmd=set_prefix&prefix=/var/html/CF/", 'r');
 	    */
 	}
+}
+
+if ($rec_fast){
+  for ($i=0;$i<count($unique_cams);$i++){
+    set_fast_recording($unique_cams[$i]['ip']);
+  }
+}
+
+if ($rec_norm){
+  for ($i=0;$i<count($unique_cams);$i++){
+    set_normal_recording($unique_cams[$i]['ip']);
+  }
 }
 
 if ($exit) {
