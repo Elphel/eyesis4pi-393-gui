@@ -1,13 +1,14 @@
-Installation in Kubuntu 12.04:
+Installation in Kubuntu 16.04:
 
 1. Install the following packages, terminal:
- sudo apt-get install php5 apache2
+ sudo apt-get install apache2 php5.6 php5.6-curl
 
 2. Make the src folder visible to the web server:
-2a. Create a link, terminal: "sudo ln -sf <path-to-eyesis4pi_gui-folder> /var/www/eysisgui"
+2a. Create a link, terminal: "sudo ln -sf <path-to-eyesis4pi_gui-folder> /var/www/eyesisgui"
 2b. Or copy all the files to /var/www/eyesisgui.
 Note: "/var/www" is the (apache2) web server's document root folder.
 
-3. Make the footage root folder "/data/footage" writable for everyone.
+(for recording to the device over network only)
+2c. Make the footage root folder "/data/footage" writable for everyone.
 
 Questions: <support-list-eyesis@elphel.com>
