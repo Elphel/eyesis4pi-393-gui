@@ -253,6 +253,13 @@ function tab3_init(){
   c += "<button title='reset raw partitions write pointers' id='other_reset_rec'>Reset Fast REC</button>";
   
   c +="</div>";
+
+  c += "<br/><b>Logs:</b><div>";
+  
+  c += "<button title='enable recorder log' id='other_rec_log_en'>Enable camogm log</button>";
+  c += "<button title='download system logs' id='other_log_dl'>Download logs</button>";
+  
+  c +="</div>";
   
   c += "<br/><b>System:</b><div><button id='other_reboot' title='System reboot'>Reboot</button></div>";
     
@@ -264,8 +271,45 @@ function tab3_init(){
   $("#other_fast_rec").on("click",system_fast_rec);
   $("#other_norm_rec").on("click",system_norm_rec);
   
+  $("#other_rec_log_en").on("click",camogm_log_en);
+  $("#other_log_dl").on("click",logs_download);
+  
 }
 // TAB 3: end
+
+function camogm_log_en(){
+  console.log("enable camogm log");
+  var url = "eyesis4pi_control.php?camogm_log_en&rq="+cams_to_str();
+  $.ajax({
+    url: url,
+    success: function(data){
+      console.log(data);
+    }
+  });
+}
+
+function logs_download(){
+  tmp_cams = get_unique_cams();
+  for (var i=0;i<tmp_cams.length;i++){
+    logs_download_single(tmp_cams[i]);
+  }
+}
+
+function logs_download_single(tmp_cam){
+  
+  var link = document.createElement('a');
+  
+  link.setAttribute('download', null);
+  link.style.display = 'none';
+  
+  document.body.appendChild(link);
+  
+  link.setAttribute('href', "http://"+tmp_cam["ip"]+"/eyesis4pi_interface.php?cmd=logs_download");
+  link.click();
+  
+  document.body.removeChild(link);
+  
+}
 
 function system_reboot(){
   console.log("system reboot");

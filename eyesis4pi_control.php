@@ -59,6 +59,7 @@ $res_xml = "";
 $debug=true;
 
 $run_camogm=false;
+$camogm_log_en = false;
 $start = false;
 $stop = false;
 $mount = false;
@@ -92,6 +93,7 @@ foreach($_GET as $key=>$value) {
 		case "test"            : $test=true; break;
 		
 		case "run_camogm"      : $run_camogm = true; break;
+		case "camogm_log_en"   : $camogm_log_en = true; break;
 		case "fast_rec"        : $rec_fast = true; break;
 		case "norm_rec"        : $rec_norm = true; break;
 		case "exit"            : $exit = true; break;
@@ -221,6 +223,13 @@ function set_normal_recording($ip){
 function set_fast_recording($ip){
   fopen("http://{$ip}/camogm_interface.php?cmd=setrawdevpath&path=/dev/sda2", 'r');
   fopen("http://{$ip}/camogm_interface.php?cmd=setjpeg", 'r');
+}
+
+if ($camogm_log_en){
+  for ($i=0;$i<count($unique_cams);$i++) {
+    file_get_contents("http://{$unique_cams[$i]['ip']}/eyesis4pi_interface.php?cmd=camogm_debug", 'r');
+  }
+  print("ok");
 }
 
 //CAMOGM
