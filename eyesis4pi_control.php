@@ -252,7 +252,8 @@ if ($run_camogm) {
 	    fopen("http://{$unique_cams[$i]['ip']}/camogm_interface.php?cmd=setmov", 'r');
 	    */
 	    
-	    set_fast_recording($unique_cams[$i]['ip']);
+	    //set_fast_recording($unique_cams[$i]['ip']);
+	    set_normal_recording($unique_cams[$i]['ip']);
 	    
 	    /*
 	    fopen("http://{$unique_cams[$i]['ip']}/camogm_interface.php?cmd=setrawdevpath&path=/dev/sda2", 'r');
@@ -269,10 +270,10 @@ if ($run_camogm) {
 	    // set frames_per_chunk in exif to 1
 	    fopen("http://{$unique_cams[$i]['ip']}/camogm_interface.php?cmd=set_frames_per_chunk&frames_per_chunk=1", 'r');
 	    // set default split parameters
-	    fopen("http://{$unique_cams[$i]['ip']}/camogm_interface.php?cmd=set_duration&duration=1000", 'r');
-	    fopen("http://{$unique_cams[$i]['ip']}/camogm_interface.php?cmd=set_size&size=1800000000", 'r');
+	    fopen("http://{$unique_cams[$i]['ip']}/camogm_interface.php?cmd=set_duration&duration=60", 'r');
+	    fopen("http://{$unique_cams[$i]['ip']}/camogm_interface.php?cmd=set_size&size=2000000000", 'r');
 	    //debugging
-	    fopen("http://{$unique_cams[$i]['ip']}/camogm_interface.php?cmd=set_max_frames&max_frames=1000", 'r');
+	    fopen("http://{$unique_cams[$i]['ip']}/camogm_interface.php?cmd=set_max_frames&max_frames=400", 'r');
 	    
 	    /*
 	    // start camogm
