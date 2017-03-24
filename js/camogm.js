@@ -62,7 +62,7 @@ function camogm_create_table(){
     var table_html = "";
     
     if (camogm_en) {
-	table_html = "<tr>\n\t<td align='center'>IP</td>\n\t<td colspan='2' align='center'>SSD free space</td>\n<td>channel</td><td>&nbsp;&nbsp;Buffer (important when recording)</td></tr>";
+	table_html = "<tr>\n\t<td align='center'>IP</td>\n\t<td colspan='2' align='center'>SSD free space</td>\n<td>channel</td><td>&nbsp;&nbsp;Buffer (important when recording)</td><td>Errors</td></tr>";
         //table_html += "<tr><td></td><td align='center' style='font-size:0.8em;'>sda1</td><td align='center' style='font-size:0.8em;'>sda2</td></tr>";
         
         var unique = get_unique_cams();
@@ -74,11 +74,13 @@ function camogm_create_table(){
               tmpstr = cams[i].ip;
               ssdid1 = "cam"+j+"_sda1";
               ssdid2 = "cam"+j+"_sda2";
+              camogm_err = "camogm_error_"+j;
               j++;
           }else{
               tmpstr = "";
               ssdid1 = "";
               ssdid2 = "";
+              camogm_err = "";
           } 
           
 	  table_html +=  "<tr>\n\t\
@@ -87,6 +89,7 @@ function camogm_create_table(){
             <td id='"+ssdid2+"' align='right'></td>\
             <td align='center'>"+(i+1)+"</td>\
             <td><div id='buffer"+i+"_sum' class='buffer'><div id='buffer"+i+"' style='width:200px;' class='buffer_free'>free</div></div></td>\
+            <td align='center'><div id='"+camogm_err+"'></div></td>\
             </tr>";
 	}
     }
@@ -143,6 +146,15 @@ function camogm_parse_status(data){
     var camogm_states = $(data).find('camogm_state');
     
     var unique_cams = get_unique_cams();
+    
+    for(var i=0;i<unique_cams.length;i++){
+      ucam_index = get_unique_cams_index(unique_cams[i]);
+      last_error = $(camogm_states[i]).find("last_error_code").text();
+      console.log("index: "+i+" last_error="+last_error);
+      if (last_error!=0){
+        $("#camogm_error_"+i).append($("<span style='color:red;'>"+last_error+",&nbsp</span>"));
+      }
+    }
     
     for(var i=0;i<cams.length;i++){
       ucam_index = get_unique_cams_index(cams[i]);
