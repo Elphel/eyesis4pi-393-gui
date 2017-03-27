@@ -56,7 +56,7 @@ if (isset($_GET['rq'])){
 
 $pc_time=@getdate();
 
-if ($cmd=="cf_cards"){
+if ($cmd=="ssds"){
 
     for($i=0;$i<count($cams);$i++) {
 	$cf_contents = file_get_contents("http://{$cams[$i]['ip']}/camogm_interface.php?cmd=list_partitions");
@@ -76,20 +76,15 @@ if ($cmd=="cf_cards"){
 }
 
 if ($cmd=="gps") {
-    $res_xml = @file_get_contents("http://".($cam_ip[0]).":8081/meta");
+    $res_xml = @file_get_contents("http://".($cams[0]['ip']).":2323/meta");
 }
 
 if ($cmd=="imu"){
 
-    $imu_contents = @file_get_contents("http://".($cam_ip[0])."/phpshell.php?command=dmesg%20|%20grep%20'IMU'");
+    //$imu_contents = @file_get_contents("http://".($cam_ip[0])."/eyesis4pi_interface.php?cmd=check_imu");
+    $imu_contents = @file_get_contents("http://".($cams[0]['ip'])."/i2c.php?cmd=fromEEPROM4&EEPROM_chn=3");
 
-    $imu = @preg_match("/IMU_ctl_open/",$imu_contents);
-
-    if ($imu>0) $imu = 1;
-
-    $res_xml = "<Document>\n";
-    $res_xml .= "\t<imu>".$imu."</imu>\n";
-    $res_xml .= "</Document>";
+    echo $imu_contents;
 }
 
 header("Content-Type: text/xml");

@@ -22,8 +22,8 @@ function camogm_rec_start(){
   console.log("camogm: begin recording");
   //camogm_cmd("mount",false);
   camogm_cmd("start",true);
-  if (!disable_intervals) intvl_camogm_status = setInterval("camogm_status(true)",10000);
-  if (!disable_intervals) intvl_hdd_free_space = setInterval("camogm_get_ssd_free_space(false)",10000);
+  if (!disable_intervals) intvl_camogm_status = setInterval("camogm_status(true)",5000);
+  if (!disable_intervals) intvl_hdd_free_space = setInterval("camogm_get_ssd_free_space(false)",5000);
 }
 
 function camogm_rec_stop(){

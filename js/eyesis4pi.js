@@ -40,7 +40,7 @@ var pc_footage_limit = 3000;
 var pc_gps_imu_device_name = "/dev/sda1";
 
 // TODO: reduce?
-var camogm_rec_delay = 5;
+var camogm_rec_delay = 1;
 
 var cams = [
   {"ip":"192.168.0.161","port":2326,"channel":3,"master":0,"logger":0},

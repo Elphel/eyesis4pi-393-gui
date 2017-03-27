@@ -1,6 +1,7 @@
 //global vars
 var free_space_interval = false;
-var master_ip = "161";
+var master_ip = "163";
+var logger_ip = "161"
 var daemon_restart_en = true;
 var intvl_temperatures;
 var n = 8;
@@ -22,15 +23,52 @@ var cams = [
 ];
 
 function get_master_index(){
-    for (var i=0;i<cam.length;i++){
-        if (cams[i].master==1){
-            return i;
-        }
-    }
+    for (var i=0;i<cams.length;i++) if (cams[i].master==1) return i;
     return -1;
 }
 
+function get_logger_index(){
+    for (var i=0;i<cams.length;i++) if (cams[i].logger==1) return i;
+    return -1;
+}
+
+function get_unique_cams(){
+    res = [];
+    res_full = [];
+    for(var i=0;i<cams.length;i++){
+         if (res.indexOf(cams[i].ip)==-1) {
+             res.push(cams[i].ip);
+             res_full.push(cams[i]);
+         }
+    }
+    return res_full;
+}
+
+function get_unique_rq_str(){
+    res_full = get_unique_cams();
+    rq_str = "";
+    for(var i=0;i<res_full.length;i++){
+        if (i!=0){
+            rq_str += ",";
+        }
+        rq_str += res_full[i].ip+":"+res_full[i].port+":"+res_full[i].channel+":"+res_full[i].master+":"+res_full[i].logger;
+    }
+    return rq_str;
+}
+
+function cams_to_str(){
+    var rq_str = "";
+    for(var i=0;i<cams.length;i++){
+        if (i!=0){
+            rq_str += ",";
+        }
+        rq_str += cams[i].ip+":"+cams[i].port+":"+cams[i].channel+":"+cams[i].master+":"+cams[i].logger;
+    }
+    return rq_str;
+}
+
 function parseURL() {
+  /*
   var parameters=location.href.replace(/\?/ig,"&").split("&");
   for (var i=0;i<parameters.length;i++) parameters[i]=parameters[i].split("=");
   for (var i=1;i<parameters.length;i++) {
@@ -39,6 +77,11 @@ function parseURL() {
       case "master_ip": master_ip = parseInt(parameters[i][1]);break;
     }
   }
+  */
+  
+  master_ip = cams[get_master_index()].ip;
+  logger_ip = cams[get_logger_index()].ip;
+  
 }
 
 function run(){
@@ -51,7 +94,7 @@ function test7_color_bars_part1(){
     //color bars on
     set_parameter(master_ip,"TESTSENSOR",65544,true);
     //to JPEG
-    set_parameter(master_ip,"COLOR",1,true);
+    set_parameter(master_ip,"COLOR",0,true);
     setTimeout("test7_color_bars_part2()",3000);
 }
 
@@ -78,7 +121,7 @@ function test6_t(){
 
 function test5_imu(){
     $.ajax({
-      url: "tests.php?cmd=imu&master_ip="+master_ip+"&n="+n,
+      url: "tests.php?cmd=imu&rq="+logger_ip,
       async: true,
       success: function(response){
 	test5_update_imu(response);
@@ -89,12 +132,12 @@ function test5_imu(){
 
 function test5_update_imu(text){
     var html = "";
-    var data = $(text).find("Document");
+    var data = $(text).find("board");
     
-    var imu = data.find("imu").text();
+    var imu = data.find("part").text();
     
-    if (imu=="1") html += "<div>IMU: OK</div>\n";
-    else          html += "<div class='alerts'>IMU not found</div>\n";
+    if (imu!="") html += "<div>IMU: OK ("+imu+")</div>\n";
+    else         html += "<div class='alerts'>IMU not found</div>\n";
     
     $("#test_5_div").html(html);
     
@@ -104,7 +147,7 @@ function test5_update_imu(text){
 
 function test4_gps(){
     $.ajax({
-      url: "tests.php?cmd=gps&master_ip="+master_ip+"&n="+n,
+      url: "tests.php?cmd=gps&rq="+logger_ip,
       async: true,
       success: function(response){
 	test4_update_gps(response);
@@ -138,7 +181,7 @@ function test4_update_gps(text){
       html += "</table>";
   }
   
-  html += "<br/><span style='font-size:14px;'>Manual test: check the coordinates <a href='http://192.168.0."+master_ip+":8081/meta'>here</a>.</span>";
+  html += "<br/><span style='font-size:14px;'>Manual test: check the coordinates <a href='http://"+logger_ip+":2323/meta'>here</a>.</span>";
   
   $("#test_4_div").html(html);
 
@@ -156,7 +199,7 @@ function test3_internal_cf_cards(){
     }
     
     $.ajax({
-      url: "tests.php?cmd=cf_cards&rq="+rqstr,
+      url: "tests.php?cmd=ssds&rq="+rqstr,
       async: true,
       success: function(response){
 	test3_update_cards(response);
@@ -200,7 +243,7 @@ function test3_update_cards(text){
   $("#test_3_div").html(html);
   
   //run the next test
-  //test4_gps();
+  test4_gps();
 }
 
 function test1_get_number_of_sensors(){
@@ -277,10 +320,9 @@ function test1_update_cams(text){
   test3_internal_cf_cards();
 }
 
-
-
 function set_parameter(ip,par,val,async,callback){
-  var url = "eyesis4pi_control.php?set_parameter&master_ip="+ip+"&n="+n+"&pname="+par+"&pvalue="+val;
+  //console.log("n is "+n);
+  var url = "eyesis4pi_control.php?set_parameter&rq="+cams_to_str()+"&pname="+par+"&pvalue="+val;
   
   $.ajax({
     url: url,
@@ -341,8 +383,8 @@ function previews_init(){
   
   var c = "<table id='prevs_images'><tr>\n";
   
-  for (var i=1;i<(n+1);i++) {
-      c += "<td><a href='http://192.168.0.22"+(i)+"'><canvas id='cam"+i+"_canvas' class='prevs'></canvas></a></td>";
+  for (var i=0;i<cams.length;i++) {
+      c += "<td><canvas id='cam_"+i+"_canvas' class='prevs'></canvas></td>";
   }
   
   c+= "</tr></table>";
@@ -362,6 +404,7 @@ function working(){
     else                    $("#status").html("Working");
 }
 
+/*
 function parseURL() {
   var parameters=location.href.replace(/\?/ig,"&").split("&");
   for (var i=0;i<parameters.length;i++) parameters[i]=parameters[i].split("=");
@@ -375,3 +418,4 @@ function parseURL() {
   if (n!=8&&n!=9) {eyesis4pi_en = false};
   console.log("eyesis4pi_en = "+eyesis4pi_en+" n = "+n);
 }
+*/
