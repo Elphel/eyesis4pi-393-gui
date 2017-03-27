@@ -22,51 +22,6 @@ var cams = [
   {"ip":"192.168.0.163","port":2326,"channel":3,"master":0,"logger":0}
 ];
 
-function get_master_index(){
-    for (var i=0;i<cams.length;i++) if (cams[i].master==1) return i;
-    return -1;
-}
-
-function get_logger_index(){
-    for (var i=0;i<cams.length;i++) if (cams[i].logger==1) return i;
-    return -1;
-}
-
-function get_unique_cams(){
-    res = [];
-    res_full = [];
-    for(var i=0;i<cams.length;i++){
-         if (res.indexOf(cams[i].ip)==-1) {
-             res.push(cams[i].ip);
-             res_full.push(cams[i]);
-         }
-    }
-    return res_full;
-}
-
-function get_unique_rq_str(){
-    res_full = get_unique_cams();
-    rq_str = "";
-    for(var i=0;i<res_full.length;i++){
-        if (i!=0){
-            rq_str += ",";
-        }
-        rq_str += res_full[i].ip+":"+res_full[i].port+":"+res_full[i].channel+":"+res_full[i].master+":"+res_full[i].logger;
-    }
-    return rq_str;
-}
-
-function cams_to_str(){
-    var rq_str = "";
-    for(var i=0;i<cams.length;i++){
-        if (i!=0){
-            rq_str += ",";
-        }
-        rq_str += cams[i].ip+":"+cams[i].port+":"+cams[i].channel+":"+cams[i].master+":"+cams[i].logger;
-    }
-    return rq_str;
-}
-
 function parseURL() {
   /*
   var parameters=location.href.replace(/\?/ig,"&").split("&");

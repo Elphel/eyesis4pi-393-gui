@@ -74,14 +74,14 @@ function camogm_create_table(){
               tmpstr = cams[i].ip;
               ssdid1 = "cam"+j+"_sda1";
               ssdid2 = "cam"+j+"_sda2";
-              camogm_err = "camogm_error_"+j;
               j++;
           }else{
               tmpstr = "";
               ssdid1 = "";
               ssdid2 = "";
-              camogm_err = "";
           } 
+          
+          camogm_err = "camogm_error_"+i;
           
 	  table_html +=  "<tr>\n\t\
             <td>"+tmpstr+"</td>\
@@ -89,7 +89,7 @@ function camogm_create_table(){
             <td id='"+ssdid2+"' align='right'></td>\
             <td align='center'>"+(i+1)+"</td>\
             <td><div id='buffer"+i+"_sum' class='buffer'><div id='buffer"+i+"' style='width:200px;' class='buffer_free'>free</div></div></td>\
-            <td align='center'><div id='"+camogm_err+"'></div></td>\
+            <td align='left'><div id='"+camogm_err+"'></div></td>\
             </tr>";
 	}
     }
@@ -145,6 +145,7 @@ function camogm_parse_status(data){
     
     var camogm_states = $(data).find('camogm_state');
     
+    /*
     var unique_cams = get_unique_cams();
     
     for(var i=0;i<unique_cams.length;i++){
@@ -155,6 +156,7 @@ function camogm_parse_status(data){
         $("#camogm_error_"+i).append($("<span style='color:red;'>"+last_error+",&nbsp</span>"));
       }
     }
+    */
     
     for(var i=0;i<cams.length;i++){
       ucam_index = get_unique_cams_index(cams[i]);
@@ -172,6 +174,40 @@ function camogm_parse_status(data){
       buf_sum  = +buf_free+buf_used;
 
       $("#buffer"+i).css({width:(Math.round(buf_free/buf_sum*$("#buffer"+i+"_sum").width()))+"px"});
+    }
+    
+    for(var i=0;i<cams.length;i++){
+      ucam_index = get_unique_cams_index(cams[i]);
+      cam_port = cams[i].channel;
+      
+      var tmp_xml = $(camogm_states[ucam_index]).find("sensor_port_"+cam_port);
+      
+      if (tmp_xml.length!=0){
+        var errors = Array(
+          parseInt($(tmp_xml).find("frame_not_ready").text()),
+          parseInt($(tmp_xml).find("frame_invalid").text()),
+          parseInt($(tmp_xml).find("frame_nextfile").text()),
+          parseInt($(tmp_xml).find("frame_changed").text()),
+          parseInt($(tmp_xml).find("frame_broken").text()),
+          parseInt($(tmp_xml).find("frame_file_err").text()),
+          parseInt($(tmp_xml).find("frame_malloc").text()),
+          parseInt($(tmp_xml).find("frame_too_early").text()),
+          parseInt($(tmp_xml).find("frame_other").text()),
+          parseInt($(tmp_xml).find("frame_nospace").text())     
+        );
+        
+        //not errors
+        errors[0] = 0;
+        errors[3] = 0;
+        
+        var camogm_error = "";
+        
+        for(var j=0;j<errors.length;j++){
+          if (errors[j]!=0) camogm_error += "err"+(j+1)+"("+errors[j]+"),&nbsp";
+        }
+        
+        $("#camogm_error_"+i).html($("<span style='color:red;'>"+camogm_error+"</span>"));
+      }
     }
     
     if (camogm_en) {
