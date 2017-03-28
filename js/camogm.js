@@ -33,11 +33,11 @@ function camogm_rec_stop(){
   setTimeout(function(){
     clearInterval(intvl_hdd_free_space);
     intvl_hdd_free_space = false;
-  },10000);
+  },interval_time);
   setTimeout(function(){
     clearInterval(intvl_camogm_status);
     intvl_camogm_status = false;
-  },10000);
+  },interval_time);
   green_the_bars();
 }
 
@@ -219,11 +219,11 @@ function camogm_parse_status(data){
 	  restore_parameters_en = false;
 	  if (!disable_intervals&&!intvl_camogm_status){
 	    camogm_status(true);
-	    intvl_camogm_status = setInterval("camogm_status(true)",10000);
+	    intvl_camogm_status = setInterval("camogm_status(true)",interval_time);
 	  }
 	  if (!disable_intervals&&!intvl_hdd_free_space){
 	    camogm_get_ssd_free_space(false);
-	    intvl_hdd_free_space = setInterval("camogm_get_ssd_free_space(false)",10000);
+	    intvl_hdd_free_space = setInterval("camogm_get_ssd_free_space(false)",interval_time);
 	  }
 	}
 	if (restore_parameters_en) restore_parameters();

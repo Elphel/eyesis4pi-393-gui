@@ -9,6 +9,8 @@ var settings_file = "settings.xml";
 
 var daemon_restart_en = true;
 
+var interval_time = 5000;
+
 var intvl_temperatures;
 var intvl_histograms;
 var intvl_camogm_status;
@@ -112,8 +114,8 @@ function init(){
     
   
     //apply parameters
-    //if (!disable_intervals) intvl_temperatures = setInterval("read_temperatures()",60000);
-    //if (!disable_intervals) intvl_histograms = setInterval("refresh_histograms()",3000);
+    if (!disable_intervals) intvl_temperatures = setInterval("read_temperatures()",60000);
+    if (!disable_intervals) intvl_histograms = setInterval("refresh_histograms()",interval_time);
     refresh_histograms();
     refresh_images();
    
@@ -174,19 +176,21 @@ function init(){
 function status_update(status) {
     var state_str = "running";
     
+    if (!free_space_interval&&!camogm_en) {
+        free_space_interval = setInterval("check_status()",interval_time);
+    }else{
+	clearInterval(free_space_interval);
+	free_space_interval = false;
+    }
+    
     if (status=="running") {
 	$("#stop").attr('disabled', false);
 	$("#rec").attr('disabled', true);
 	$("#btn_refresh").attr('disabled', true);
-	if (!free_space_interval&&!camogm_en) {
-	    free_space_interval = setInterval("check_status()",5000);
-	}
     }else{
 	$("#stop").attr('disabled', true);
 	$("#rec").attr('disabled', false);
 	$("#btn_refresh").attr('disabled', false);
-	clearInterval(free_space_interval);
-	free_space_interval = false;
     }
     update_state_en = false;
 }
@@ -277,7 +281,7 @@ function send_cmd(cmd){
 	    else {
 	      console.log("free_space_interval = "+free_space_interval);
 	      if (!free_space_interval) {
-		  free_space_interval = setInterval("check_status()",5000);
+		  free_space_interval = setInterval("check_status()",interval_time);
 	      }
 	    }
 	}
