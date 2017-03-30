@@ -85,8 +85,8 @@ function camogm_create_table(){
           
 	  table_html +=  "<tr>\n\t\
             <td>"+tmpstr+"</td>\
-            <td id='"+ssdid1+"' align='right'></td>\
-            <td id='"+ssdid2+"' align='right'></td>\
+            <td id='"+ssdid1+"' title='partition with file system: /dev/sda1' align='right'></td>\
+            <td id='"+ssdid2+"' title='raw partition: /dev/sda2' align='right'></td>\
             <td align='center'>"+(i+1)+"</td>\
             <td><div id='buffer"+i+"_sum' class='buffer'><div id='buffer"+i+"' style='width:200px;' class='buffer_free'>free</div></div></td>\
             <td align='left'><div id='"+camogm_err+"'></div></td>\
@@ -118,9 +118,9 @@ function camogm_parse_hdd_free_space(data){
         raw_data = $(this).text();
         raw_data = raw_data.replace(/"/gm,'');
         data_arr = raw_data.split(" ");
-        if (data_arr.length==2){
+        if (data_arr.length==1){
           $("#cam"+(i)+"_sda1").html("<b style='color:"+random_color+";'>&nbsp;"+data_arr[0]+" </b>");
-          $("#cam"+(i)+"_sda2").html("<b style='color:"+random_color+";'>&nbsp;"+data_arr[1]+" </b>");
+          //$("#cam"+(i)+"_sda2").html("<b style='color:"+random_color+";'>&nbsp;"+data_arr[1]+" </b>");
         }
         i++;
     });
@@ -157,6 +157,28 @@ function camogm_parse_status(data){
       }
     }
     */
+    
+    var random_color =  "rgba("+Math.floor(Math.random()*128)+","+Math.floor(Math.random()*128)+","+Math.floor(Math.random()*128)+",1)";
+    
+    var unique_cams = get_unique_cams();
+    
+    for(var i=0;i<unique_cams.length;i++){
+      ucam_index = get_unique_cams_index(unique_cams[i]);
+      
+      lba_start   = $(camogm_states[i]).find("lba_start").text();
+      lba_current = $(camogm_states[i]).find("lba_current").text();
+      lba_end     = $(camogm_states[i]).find("lba_end").text();
+      
+      console.log("index: "+i+" lba_current="+lba_start+" lba_end="+lba_end);
+      
+      free_space = ((lba_end-lba_current)/1024/1024/2);
+      free_space = Math.round(free_space*100)/100+"G";
+      
+      if (lba_end!=0){
+        $("#cam"+(i)+"_sda2").html("<b style='color:"+random_color+";'>&nbsp;"+free_space+" </b>");
+      }
+      
+    }    
     
     for(var i=0;i<cams.length;i++){
       ucam_index = get_unique_cams_index(cams[i]);
