@@ -139,7 +139,7 @@ if (isset($_GET['rq'])){
 }
 
 //overrides
-$debuglev = 0;
+$debuglev = 3;
 
 $pc_time=getdate();
 
@@ -227,7 +227,7 @@ function set_fast_recording($ip){
 
 if ($camogm_log_en){
   for ($i=0;$i<count($unique_cams);$i++) {
-    file_get_contents("http://{$unique_cams[$i]['ip']}/eyesis4pi_interface.php?cmd=camogm_debug", 'r');
+    file_get_contents("http://{$unique_cams[$i]['ip']}/eyesis4pi_interface.php?cmd=camogm_debug&debug=/tmp/camogm.log&debuglev=$debuglev", 'r');
   }
   print("ok");
 }
@@ -252,8 +252,8 @@ if ($run_camogm) {
 	    fopen("http://{$unique_cams[$i]['ip']}/camogm_interface.php?cmd=setmov", 'r');
 	    */
 	    
-	    //set_fast_recording($unique_cams[$i]['ip']);
-	    set_normal_recording($unique_cams[$i]['ip']);
+	    set_fast_recording($unique_cams[$i]['ip']);
+	    //set_normal_recording($unique_cams[$i]['ip']);
 	    
 	    /*
 	    fopen("http://{$unique_cams[$i]['ip']}/camogm_interface.php?cmd=setrawdevpath&path=/dev/sda2", 'r');

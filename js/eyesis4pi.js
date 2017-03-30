@@ -176,7 +176,7 @@ function init(){
 function status_update(status) {
     var state_str = "running";
     
-    if (!free_space_interval&&!camogm_en) {
+    if (!free_space_interval&&camogm_en) {
         free_space_interval = setInterval("check_status()",interval_time);
     }else{
 	clearInterval(free_space_interval);
