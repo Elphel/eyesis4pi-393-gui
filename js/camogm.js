@@ -236,6 +236,13 @@ function camogm_parse_status(data){
 	//status_update(state);
 	$("#status").html(state);
     }
+    
+    /*
+    if (state=="\"stopped\""){
+      system_refresh_rec();
+    }
+    */
+    
     if (update_state_en) {
 	if (state=="running") {
 	  restore_parameters_en = false;

@@ -77,6 +77,9 @@ $rec_reset = false;
 $rec_refresh = false;
 $system_reboot = false;
 
+$internal_ssds = false;
+$external_ssds = false;
+
 // keys assign
 foreach($_GET as $key=>$value) {
 	switch($key) {
@@ -118,6 +121,9 @@ foreach($_GET as $key=>$value) {
 		case "reboot"          : $system_reboot = true;break;
 		case "reset_rec"       : $rec_reset = true;break;
 		case "refresh_rec"     : $rec_refresh = true;break;
+		
+		case "internal_ssds"  :  $internal_ssds = true;break;
+		case "external_ssds"  :  $external_ssds = true;break;
 		
 		case "get_free_space"  : $get_free_space=true; break;
 		case "mount_point"     : $mount_point = $value; break;
@@ -221,6 +227,20 @@ if ($rec_refresh){
   print("ok");
 }
 
+if ($internal_ssds){
+  for ($i=0;$i<count($unique_cams);$i++) {
+    file_get_contents("http://{$unique_cams[$i]['ip']}/eyesis4pi_interface.php?cmd=internal_drive", 'r');
+  }
+  print("ok");
+}
+
+if ($external_ssds){
+  for ($i=0;$i<count($unique_cams);$i++) {
+    file_get_contents("http://{$unique_cams[$i]['ip']}/eyesis4pi_interface.php?cmd=external_drive", 'r');
+  }
+  print("ok");
+}
+
 # presets for recording to a file system
 function set_normal_recording($ip){
   fopen("http://{$ip}/camogm_interface.php?cmd=set_prefix&prefix=/mnt/sda1/", 'r');
@@ -236,6 +256,24 @@ function set_fast_recording($ip){
   fopen("http://{$ip}/camogm_interface.php?cmd=setjpeg", 'r');
 }
 
+function kill_camogm($ip){
+  fopen("http://{$ip}/camogm_interface.php?cmd=camogm_kill", 'r');
+}
+
+function start_camogm($ip){
+
+  global $debuglev;
+
+  fopen("http://{$ip}/camogm_interface.php?cmd=run_camogm", 'r');
+  fopen("http://{$ip}/camogm_interface.php?cmd=set_debuglev&debuglev=$debuglev", 'r');
+  set_fast_recording($ip);
+  fopen("http://{$ip}/camogm_interface.php?cmd=set_frames_per_chunk&frames_per_chunk=1", 'r');
+  fopen("http://{$ip}/camogm_interface.php?cmd=set_duration&duration=60", 'r');
+  fopen("http://{$ip}/camogm_interface.php?cmd=set_size&size=2000000000", 'r');
+  fopen("http://{$ip}/camogm_interface.php?cmd=set_max_frames&max_frames=400", 'r');
+  
+}
+
 if ($camogm_log_en){
   for ($i=0;$i<count($unique_cams);$i++) {
     file_get_contents("http://{$unique_cams[$i]['ip']}/eyesis4pi_interface.php?cmd=camogm_debug&debug=/tmp/camogm.log&debuglev=$debuglev", 'r');
@@ -245,83 +283,9 @@ if ($camogm_log_en){
 
 //CAMOGM
 if ($run_camogm) {
-	for ($i=0;$i<count($unique_cams);$i++) {
-	    // start camogm
-	    //if (!$debug) fopen("http://{$cams[$i]['ip']}/camogm_interface.php?cmd=run_camogm", 'r');
-	    //else         fopen("http://{$cams[$i]['ip']}/camogm_interface.php?cmd=run_camogm&debug=$debug&debuglev=$debuglev", 'r');
-	    
-	    fopen("http://{$unique_cams[$i]['ip']}/camogm_interface.php?cmd=run_camogm", 'r');
-	    
-	    // set debug level
-	    fopen("http://{$unique_cams[$i]['ip']}/camogm_interface.php?cmd=set_debuglev&debuglev=$debuglev", 'r');
-	    
-	    // set "/var/0" prefix - FORMATTED PARTITION
-	    
-	    /*
-	    fopen("http://{$unique_cams[$i]['ip']}/camogm_interface.php?cmd=set_prefix&prefix=/mnt/sda1/", 'r');
-	    fopen("http://{$unique_cams[$i]['ip']}/camogm_interface.php?cmd=setrawdevpath&path=/dev/", 'r');
-	    fopen("http://{$unique_cams[$i]['ip']}/camogm_interface.php?cmd=setmov", 'r');
-	    */
-	    
-	    set_fast_recording($unique_cams[$i]['ip']);
-	    //set_normal_recording($unique_cams[$i]['ip']);
-	    
-	    /*
-	    fopen("http://{$unique_cams[$i]['ip']}/camogm_interface.php?cmd=setrawdevpath&path=/dev/sda2", 'r');
-	    fopen("http://{$unique_cams[$i]['ip']}/camogm_interface.php?cmd=setjpeg", 'r');
-	    */
-            // default path UNFORMATTED PARTITION
-	    //fopen("http://{$unique_cams[$i]['ip']}/camogm_interface.php?cmd=setrawdevpath&path=/dev/sda2", 'r');
-	    
-	    //mount
-	    //fopen("http://{$cams[$i]['ip']}/camogm_interface.php?cmd=mount&partition=/dev/hda1&mountpoint=/var/html/CF", 'r');
-	    // set .mov format
-	    
-	    //fopen("http://{$unique_cams[$i]['ip']}/camogm_interface.php?cmd=setjpeg", 'r');
-	    // set frames_per_chunk in exif to 1
-	    fopen("http://{$unique_cams[$i]['ip']}/camogm_interface.php?cmd=set_frames_per_chunk&frames_per_chunk=1", 'r');
-	    // set default split parameters
-	    fopen("http://{$unique_cams[$i]['ip']}/camogm_interface.php?cmd=set_duration&duration=60", 'r');
-	    fopen("http://{$unique_cams[$i]['ip']}/camogm_interface.php?cmd=set_size&size=2000000000", 'r');
-	    //debugging
-	    fopen("http://{$unique_cams[$i]['ip']}/camogm_interface.php?cmd=set_max_frames&max_frames=400", 'r');
-	    
-	    /*
-	    // start camogm
-	    if (!$debug) fopen("http://{$cams[$i]['ip']}/camogm_interface.php?cmd=run_camogm", 'r');
-	    else         fopen("http://{$cams[$i]['ip']}/camogm_interface.php?cmd=run_camogm&debug=$debug&debuglev=$debuglev", 'r');
-
-	    // set debug level
-	    fopen("http://{$cams[$i]['ip']}/camogm_interface.php?cmd=set_debuglev&debuglev=$debuglev", 'r');
-
-	    // set "/var/0" prefix
-	    //fopen("http://{$cams[$i]['ip']}/camogm_interface.php?cmd=set_prefix&prefix=/var/html/CF/", 'r');
-
-            // default path
-	    fopen("http://{$cams[$i]['ip']}/camogm_interface.php?cmd=setrawdevpath&path=/dev/sda1", 'r');
-	    //mount
-	    //fopen("http://{$cams[$i]['ip']}/camogm_interface.php?cmd=mount&partition=/dev/hda1&mountpoint=/var/html/CF", 'r');
-
-	    // set .mov format
-	    fopen("http://{$cams[$i]['ip']}/camogm_interface.php?cmd=setjpeg", 'r');
-	    
-	    // set frames_per_chunk in exif to 1
-	    fopen("http://{$cams[$i]['ip']}/camogm_interface.php?cmd=set_frames_per_chunk&frames_per_chunk=1", 'r');
-	    // set default split parameters
-	    fopen("http://{$cams[$i]['ip']}/camogm_interface.php?cmd=set_duration&duration=1000", 'r');
-	    fopen("http://{$cams[$i]['ip']}/camogm_interface.php?cmd=set_size&size=1800000000", 'r');
-	    
-	    //debugging
-	    fopen("http://{$cams[$i]['ip']}/camogm_interface.php?cmd=set_max_frames&max_frames=1000", 'r');
-	    
-	    //fopen("http://{$cams[$i]['ip']}/camogm_interface.php?cmd=set_max_frames&max_frames=100", 'r');
-	    
-	    //create dir
-	    //fopen("http://{$cams[$i]['ip']}/phpshell.php?command=mkdir%20/var/html/CF", 'r');
-	    //set prefix?!
-	    //fopen("http://{$cams[$i]['ip']}/camogm_interface.php?cmd=set_prefix&prefix=/var/html/CF/", 'r');
-	    */
-	}
+  for ($i=0;$i<count($unique_cams);$i++) {
+    start_camogm($unique_cams[$i]['ip']);
+  }
 }
 
 if ($rec_fast){

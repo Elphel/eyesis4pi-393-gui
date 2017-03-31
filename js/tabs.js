@@ -251,6 +251,7 @@ function tab3_init(){
   c += "<button title='set recording to file system (/mnt/sda1)' id='other_norm_rec'>Normal REC</button>";
   c += "<button title='set recording to raw partitions (/dev/sda2)' id='other_fast_rec'>Fast REC</button>";
   c += "<button title='reset raw partitions write pointers' id='other_reset_rec'>Reset Fast REC</button>";
+  c += "<button title='refresh raw partitions write pointers' id='other_refresh_rec'>Refresh Fast REC</button>";
   
   c +="</div>";
 
@@ -267,6 +268,7 @@ function tab3_init(){
   
   $("#other_reboot").on("click",system_reboot);
   $("#other_reset_rec").on("click",system_reset_rec);
+  $("#other_refresh_rec").on("click",system_refresh_rec);
   
   $("#other_fast_rec").on("click",system_fast_rec);
   $("#other_norm_rec").on("click",system_norm_rec);
@@ -325,6 +327,19 @@ function system_reboot(){
 function system_reset_rec(){
   console.log("system reset rec");
   var url = "eyesis4pi_control.php?reset_rec&rq="+cams_to_str();
+  $.ajax({
+    url: url,
+    success: function(data){
+      console.log(data);
+      //update status
+      camogm_status(true);
+    }
+  });
+}
+
+function system_refresh_rec(){
+  console.log("system refresh fast rec");
+  var url = "eyesis4pi_control.php?refresh_rec&rq="+cams_to_str();
   $.ajax({
     url: url,
     success: function(data){
