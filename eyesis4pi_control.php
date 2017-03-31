@@ -74,6 +74,7 @@ $rec_fast = false;
 $rec_norm = false;
 
 $rec_reset = false;
+$rec_refresh = false;
 $system_reboot = false;
 
 // keys assign
@@ -116,6 +117,7 @@ foreach($_GET as $key=>$value) {
 		
 		case "reboot"          : $system_reboot = true;break;
 		case "reset_rec"       : $rec_reset = true;break;
+		case "refresh_rec"     : $rec_refresh = true;break;
 		
 		case "get_free_space"  : $get_free_space=true; break;
 		case "mount_point"     : $mount_point = $value; break;
@@ -212,6 +214,13 @@ if ($rec_reset){
   print("ok");
 }
 
+if ($rec_refresh){
+  for ($i=0;$i<count($unique_cams);$i++) {
+    file_get_contents("http://{$unique_cams[$i]['ip']}/eyesis4pi_interface.php?cmd=refresh_camogm_fastrec", 'r');
+  }
+  print("ok");
+}
+
 # presets for recording to a file system
 function set_normal_recording($ip){
   fopen("http://{$ip}/camogm_interface.php?cmd=set_prefix&prefix=/mnt/sda1/", 'r');
@@ -223,7 +232,7 @@ function set_normal_recording($ip){
 function set_fast_recording($ip){
   fopen("http://{$ip}/camogm_interface.php?cmd=setrawdevpath&path=/dev/sda2", 'r');
   //experimental, default = 0 = disabled, set 1 to enable
-  fopen("http://{$ip}/camogm_interface.php?cmd=set_dummy_read&dummy_read=0", 'r');
+  fopen("http://{$ip}/camogm_interface.php?cmd=set_dummy_read&dummy_read=1", 'r');
   fopen("http://{$ip}/camogm_interface.php?cmd=setjpeg", 'r');
 }
 
