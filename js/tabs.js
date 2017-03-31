@@ -329,6 +329,8 @@ function system_reset_rec(){
     url: url,
     success: function(data){
       console.log(data);
+      //update status
+      camogm_status(true);
     }
   });
 }
