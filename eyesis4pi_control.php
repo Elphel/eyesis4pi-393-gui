@@ -222,6 +222,8 @@ function set_normal_recording($ip){
 # preset for fast recording to a raw formatted partition
 function set_fast_recording($ip){
   fopen("http://{$ip}/camogm_interface.php?cmd=setrawdevpath&path=/dev/sda2", 'r');
+  //experimental, default = 0 = disabled, set 1 to enable
+  fopen("http://{$ip}/camogm_interface.php?cmd=set_dummy_read&dummy_read=0", 'r');
   fopen("http://{$ip}/camogm_interface.php?cmd=setjpeg", 'r');
 }
 
