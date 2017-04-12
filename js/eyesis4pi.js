@@ -110,6 +110,12 @@ function init(){
     console.log("previews_init()");
     
     previews_init();
+    // init hidden canvases
+    for(var i=0;i<cams.length;i++){
+      append_hidden_div(i);
+    }
+    
+    
     init_temperatures_table();
     
   
@@ -541,50 +547,69 @@ function refresh_images(){
 
 function refresh_images_eyesis(){
   
-  var pic = new Object();
-  
-  for(var i=0;i<cams.length;i++){
-    
-    pic[i] = new Image();
-    pic[i].src = "http://"+cams[i].ip+":"+cams[i].port+"/bimg?"+Date.now();
-    pic[i].index = i;
-    pic[i].onload = function(){
-
-      var w = 200;
-      var h = 150;
-      var W = 2592;
-      var H = 1944;
-
-      var cnv = document.getElementById("cam"+this.index+"_canvas");
-      var cContext = cnv.getContext('2d');
-      cnv.setAttribute('width',h);cnv.setAttribute('height',3*w);
-      cContext.rotate(90*Math.PI/180);
-      
-      var k = 3;
-      
-      //mask out 2s
-      //if ((this.index==0)||(this.index==1)||(this.index==7)) k = 3;
-      
-      /*
-      cContext.drawImage(this, 0,0*H,W,H, 0*w, -1*h,w,h);
-      cContext.drawImage(this, 0,1*H,W,H, 1*w, -1*h,w,h);
-      cContext.drawImage(this, 0,2*H,W,H, 2*w, -1*h,w,h);
-      */
-
-      if (this.index%2==0) {
-        cContext.drawImage(this, 0,0*H,W,H, 0*w,-1*h,w,h);
-        cContext.drawImage(this, 0,1*H,W,H, 1*w,-1*h,w,h);
-        cContext.scale(-1,1);
-        cContext.drawImage(this, 0,2*H,W,H, -3*w, -1*h, w, h);
-      }else{
-	  cContext.scale(1,-1); //mirror is needed
-	  cContext.drawImage(this, 0,0*H,W,H, 0*w,0*h,w,h);
-	  cContext.drawImage(this, 0,1*H,W,H, 1*w,0*h,w,h);
-          cContext.scale(-1,1);
-	  cContext.drawImage(this, 0,2*H,W,H, -3*w,h*(0),w,h);
-      }
-    };
+  for (var i=0;i<cams.length;i++){
+      remove_hidden_div(i);
+      append_hidden_div(i);
+      $("#div_"+i).jp4({ip:cams[i].ip,port:cams[i].port,width:200,fast:true});
   }
+  
+}
+
+function draw_single_image_eyesis(img,index){
+  
+  var w = 200;
+  var h = 150;
+  
+  index = +index;
+  
+  var cnv = document.getElementById("cam"+index+"_canvas");
+  var cContext = cnv.getContext('2d');
+  cnv.setAttribute('width',h);
+  cnv.setAttribute('height',3*w);
+
+  //eyesis4pi specific
+  var dx = Array(0,1,4);
+  var dw = Array(0,0,4);
+  
+  cContext.rotate(90*Math.PI/180);
+  if (index%2==0) {
+    cContext.drawImage(img,  0,0*h+dx[0],  w,h-dw[0],  0*w,-1*h,  w,h);
+    cContext.drawImage(img,  0,1*h+dx[1],  w,h-dw[1],  1*w,-1*h,  w,h);
+    cContext.scale(-1,1);
+    cContext.drawImage(img,  0,2*h+dx[2],  w,h-dw[2],  -3*w, -1*h,  w,h);
+  }else{
+    cContext.scale(1,-1); //mirror is needed
+    cContext.drawImage(img,  0,0*h+dx[0],  w,h-dw[0],  0*w,0*h,  w,h);
+    cContext.drawImage(img,  0,1*h+dx[1],  w,h-dw[1],  1*w,0*h,  w,h);
+    cContext.scale(-1,1);
+    cContext.drawImage(img,  0,2*h+dx[2],  w,h-dw[2],  -3*w,h*(0),  w,h);
+  }
+  
+}
+
+function append_hidden_div(index){
+  el = $("<div>",{
+    id: "div_"+index
+  }).css({
+    display: "none"
+  });
+    
+  el.attr("index",index);
+  
+  el.on("canvas_ready",function(){
+      //can draw on main canvas
+      var cnv = $(this).find("#display")[0];
+      var index = $(this).attr("index");
+    
+      draw_single_image_eyesis(cnv,index);
+  });
+  
+  $("body").append(el);
+}
+
+function remove_hidden_div(index){
+  $("#div_"+index).off("canvas_ready");
+  $("#div_"+index).remove();
 }
 
 function refresh_images_triclops(){

@@ -98,15 +98,10 @@ function camogm_create_table(){
 }
 
 function camogm_get_ssd_free_space(mount_en){
-//     if (mount_en){
-// 	//camogm_cmd("mount",false);
-// 	camogm_cmd("get_hdd_space&mount_point=/var/html/CF",false,camogm_parse_hdd_free_space);
-// 	//camogm_cmd("unmount",true);
-//     }else{
-// 	camogm_cmd("get_hdd_space&mount_point=/var/html/CF",true,camogm_parse_hdd_free_space);
-//     }
-      camogm_cmd("get_free_space&mount_point=/mnt/sda1",true,camogm_parse_hdd_free_space);
-      //camogm_cmd("unmount",true);
+  
+      console.log("get_free_space is disabled");
+      //camogm_cmd("get_free_space&mount_point=/mnt/sda1",true,camogm_parse_hdd_free_space);
+      
 }
 
 function camogm_parse_hdd_free_space(data){

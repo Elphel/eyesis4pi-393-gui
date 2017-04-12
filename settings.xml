@@ -8,7 +8,7 @@
 <gpsimu_device_name>/dev/sda1</gpsimu_device_name>
 <box_force_jp4>checked</box_force_jp4>
 <input_quality>97</input_quality>
-<input_trigger_period>250</input_trigger_period>
+<input_trigger_period>2000</input_trigger_period>
 <input_hdrvexpos>0x36000</input_hdrvexpos>
 <input_autoexp_max>30</input_autoexp_max>
 <input_autoexp_lvl>220</input_autoexp_lvl>
