@@ -157,12 +157,22 @@ if ($test) {
 
 if ($set_parameter) {
 
+  /*
   $rqs = array();
   foreach($cams as $cam){
     $rqstr = "http://{$cam['ip']}/parsedit.php?immediate&sensor_port={$cam['channel']}&$pname=$pvalue";
     array_push($rqs,$rqstr);
   }
-  $res_xmls = curl_multi_finish(curl_multi_start($rqs),false);  
+  $res_xmls = curl_multi_finish(curl_multi_start($rqs),false);
+  */
+  
+  $res_xmls = array();
+  for($i=0;$i<count($cams);$i++){
+    $rqstr = "http://{$cams[$i]['ip']}/parsedit.php?immediate&sensor_port={$cams[$i]['channel']}&$pname=$pvalue";
+    $content = file_get_contents($rqstr);
+    array_push($res_xmls,$content);
+  }
+  
   $res_xml = implode("",$res_xmls);
   $res_xml = "<?xml version='1.0'?>\n<Document>\n$res_xml</Document>\n";
   
@@ -175,12 +185,22 @@ if ($set_parameter) {
 
 if ($get_parameter) {
 
+  /*
   $rqs = array();
   foreach($cams as $cam){
     $rqstr = "http://{$cam['ip']}/parsedit.php?immediate&sensor_port={$cam['channel']}&$pname";
     array_push($rqs,$rqstr);
   }
   $res_xmls = curl_multi_finish(curl_multi_start($rqs),false);  
+  */
+  
+  $res_xmls = array();
+  for($i=0;$i<count($cams);$i++){
+    $rqstr = "http://{$cams[$i]['ip']}/parsedit.php?immediate&sensor_port={$cams[$i]['channel']}&$pname";
+    $content = file_get_contents($rqstr);
+    array_push($res_xmls,$content);
+  }
+  
   $res_xml = implode("",$res_xmls);
   $res_xml = "<?xml version='1.0'?>\n<Document>\n$res_xml</Document>\n";
 
@@ -193,12 +213,23 @@ if ($get_parameter) {
 }
 
 if ($get_temperature) {
+
+  /*
   $rqs = array();
   foreach($unique_cams as $cam){
     $rqstr = "http://{$cam['ip']}/hwmon.php?cmd=t";
     array_push($rqs,$rqstr);
   }
-  $res_xmls = curl_multi_finish(curl_multi_start($rqs),false);  
+  $res_xmls = curl_multi_finish(curl_multi_start($rqs),false);
+  */
+  
+  $res_xmls = array();
+  for($i=0;$i<count($unique_cams);$i++){
+    $rqstr = "http://{$unique_cams[$i]['ip']}/hwmon.php?cmd=t";
+    $content = file_get_contents($rqstr);
+    array_push($res_xmls,$content);
+  }
+  
   $res_xml = "<result>".implode("</result><result>",$res_xmls)."</result>";
   $res_xml = "<?xml version='1.0'?>\n<Document>\n$res_xml</Document>\n";
 
@@ -215,28 +246,28 @@ if ($system_reboot){
 
 if ($rec_reset){
   for ($i=0;$i<count($unique_cams);$i++) {
-    file_get_contents("http://{$unique_cams[$i]['ip']}/eyesis4pi_interface.php?cmd=reset_camogm_fastrec", 'r');
+    fopen("http://{$unique_cams[$i]['ip']}/eyesis4pi_interface.php?cmd=reset_camogm_fastrec", 'r');
   }
   print("ok");
 }
 
 if ($rec_refresh){
   for ($i=0;$i<count($unique_cams);$i++) {
-    file_get_contents("http://{$unique_cams[$i]['ip']}/eyesis4pi_interface.php?cmd=refresh_camogm_fastrec", 'r');
+    fopen("http://{$unique_cams[$i]['ip']}/eyesis4pi_interface.php?cmd=refresh_camogm_fastrec", 'r');
   }
   print("ok");
 }
 
 if ($internal_ssds){
   for ($i=0;$i<count($unique_cams);$i++) {
-    file_get_contents("http://{$unique_cams[$i]['ip']}/eyesis4pi_interface.php?cmd=internal_drive", 'r');
+    fopen("http://{$unique_cams[$i]['ip']}/eyesis4pi_interface.php?cmd=internal_drive", 'r');
   }
   print("ok");
 }
 
 if ($external_ssds){
   for ($i=0;$i<count($unique_cams);$i++) {
-    file_get_contents("http://{$unique_cams[$i]['ip']}/eyesis4pi_interface.php?cmd=external_drive", 'r');
+    fopen("http://{$unique_cams[$i]['ip']}/eyesis4pi_interface.php?cmd=external_drive", 'r');
   }
   print("ok");
 }
@@ -276,7 +307,7 @@ function start_camogm($ip){
 
 if ($camogm_log_en){
   for ($i=0;$i<count($unique_cams);$i++) {
-    file_get_contents("http://{$unique_cams[$i]['ip']}/eyesis4pi_interface.php?cmd=camogm_debug&debug=/tmp/camogm.log&debuglev=$debuglev", 'r');
+    fopen("http://{$unique_cams[$i]['ip']}/eyesis4pi_interface.php?cmd=camogm_debug&debug=/tmp/camogm.log&debuglev=$debuglev", 'r');
   }
   print("ok");
 }
@@ -352,7 +383,7 @@ if ($unmount) {
 }
 
 if ($get_free_space) {
-  
+  /*
   $rqs = array();
   foreach($unique_cams as $cam){
     $rqstr = "http://{$cam['ip']}/eyesis4pi_interface.php?cmd=free_space";
@@ -360,14 +391,14 @@ if ($get_free_space) {
   }
   $hnd = curl_multi_start($rqs);
   $res_xmls = curl_multi_finish($hnd,false);
+  */
   
-  /*
   $res_xmls = array();
   foreach($unique_cams as $cam){
     $rqstr = file_get_contents("http://{$cam['ip']}/eyesis4pi_interface.php?cmd=free_space");
     array_push($res_xmls,$rqstr);
   }  
-  */
+
   $res_xml = implode("",$res_xmls);
   $res_xml = "<?xml version='1.0'?>\n<Document>\n$res_xml</Document>\n";
 
