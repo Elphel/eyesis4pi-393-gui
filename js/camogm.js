@@ -99,8 +99,8 @@ function camogm_create_table(){
 
 function camogm_get_ssd_free_space(mount_en){
   
-      console.log("get_free_space is disabled");
-      //camogm_cmd("get_free_space&mount_point=/mnt/sda1",true,camogm_parse_hdd_free_space);
+      //console.log("get_free_space is disabled");
+      camogm_cmd("get_free_space&mount_point=/mnt/sda1",true,camogm_parse_hdd_free_space);
       
 }
 
