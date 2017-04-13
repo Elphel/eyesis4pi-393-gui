@@ -349,12 +349,16 @@ var preview_tab;
 
 function previews_activate() {
     
+  /*
     if (preview_tab){
       preview_tab.location.reload();
       preview_tab.focus();
     }else{
       preview_tab = open("preview.html");
     }
+    */
+  
+    preview_tab = open("preview.html","preview");
   
     /*
     if (!$("#previews").is(":visible")) {
