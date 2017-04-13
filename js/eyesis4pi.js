@@ -591,6 +591,9 @@ function append_hidden_div(index){
   el = $("<div>",{
     id: "div_"+index
   }).css({
+    /*position:"absolute",
+    top: "1000px",
+    left: index*200+"px",*/
     display: "none"
   });
     

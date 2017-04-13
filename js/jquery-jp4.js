@@ -98,16 +98,19 @@
 
       TX = Date.now();
       T0 = Date.now();
-      
+
       http.responseType = "blob";
       http.onload = function(e) {
-        
+
         console.log("#"+elem.attr("id")+", file load time: "+(Date.now()-TX)/1000+" s");
         TX = Date.now();
-        
+
         if (this.status === 200) {
+
           var heavyImage = new Image();
+
           heavyImage.onload = function(){
+
             EXIF.getData(this, function() {
               //update canvas size
               canvas.attr("width",this.width);
@@ -118,10 +121,12 @@
               canvas.drawImage({
                 x:0, y:0,
                 source: this,
+                //source: heavyImage,
                 load: redraw,
                 fromCenter: false
               });
             });
+
           };
           heavyImage.src = URL.createObjectURL(http.response);
         }
@@ -132,6 +137,9 @@
     }
         
     function redraw(){
+      
+      //for debugging
+      //IMAGE_FORMAT="JPEG";
       
       $(this).draw({
         fn: function(ctx){
