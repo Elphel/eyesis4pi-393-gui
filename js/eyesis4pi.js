@@ -1,6 +1,8 @@
 //debug
 disable_intervals = false;
 
+disable_previews = true;
+
 //global vars
 var free_space_interval = false;
 var master_ip = "161";
@@ -108,13 +110,12 @@ function init(){
     get_free_space("/data/footage");
     
     console.log("previews_init()");
-    
+      
     previews_init();
     // init hidden canvases
     for(var i=0;i<cams.length;i++){
       append_hidden_div(i);
     }
-    
     
     init_temperatures_table();
     
@@ -344,7 +345,18 @@ function settings_activate() {
     }
 }
 
+var preview_tab;
+
 function previews_activate() {
+    
+    if (preview_tab){
+      preview_tab.location.reload();
+      preview_tab.focus();
+    }else{
+      preview_tab = open("preview.html");
+    }
+  
+    /*
     if (!$("#previews").is(":visible")) {
 	$("#previews").css({top:'50px',left:'10px','z-index':3}).fadeToggle(300,function(){
 	    $(this).toggleClass("window");
@@ -357,6 +369,7 @@ function previews_activate() {
     }else{
 	$("#previews").fadeToggle(300);
     }
+    */
 }
 
 function check_status(){
@@ -539,10 +552,12 @@ function select_tab(tab){
 }
 
 function refresh_images(){
+  if (!disable_previews){
     if (triclops_en) 
       refresh_images_triclops();
     else
       refresh_images_eyesis();
+  }
 }
 
 function refresh_images_eyesis(){

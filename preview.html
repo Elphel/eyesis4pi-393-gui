@@ -1,7 +1,15 @@
 <html>
 <head>
-    <script src="js/jquery-1.7.2.min.js" type="text/javascript"></script>
 
+    <title>Preview</title>
+    <link rel="shortcut icon" href="favicon.ico" />
+
+    <script src="js/jquery-3.1.1.min.js" type="text/javascript"></script>
+    <script src="js/elphel.js"></script>
+    <script src="js/jcanvas.js"></script>
+    <script src="js/exif.js"></script>
+    <script src="js/jquery-jp4.js"></script>
+    
     <script>
 
 	var baseWidth = 2592;
@@ -24,57 +32,106 @@
 	var cnv;
 	var cContext;
 
+        function resize(){
+        
+          var ratio = baseWidth/baseHeight;
+        
+          var WW = window.innerWidth;
+          var WH = window.innerHeight;
+          
+          var WWS = WW/8;
+          var WHS = WH/3/ratio;
+          
+          console.log(WWS+" vs "+WHS);
+          
+          if (WHS<WWS){
+            baseWidth = WH/3;
+            baseHeight = baseWidth/ratio;
+          }else{
+            baseHeight = WW/8;
+            baseWidth = baseHeight*ratio;
+          }
+          
+        }
+	
 	function init(){
-	    cnv = document.getElementById('canvas');
-	    cContext = cnv.getContext('2d');
-	    refresh_images();
+          
+          //update size
+          resize();
+          
+          // init canvas
+          cnv = document.getElementById('canvas');
+          cContext = cnv.getContext('2d');
+          cnv.setAttribute('width',baseHeight*8);cnv.setAttribute('height',baseWidth*3);
+        
+          // init hidden canvases
+          for(var i=0;i<cams.length;i++){
+            append_hidden_div(i);
+            $("#div_"+i).jp4({ip:cams[i].ip,port:cams[i].port,width:baseWidth,fast:true});
+          }
 	}
 
-        function refresh_images(){
-          var pic = {};
-          
-          cnv.setAttribute('width',baseHeight*8);cnv.setAttribute('height',baseWidth*3);
-
-          for(var i=0;i<cams.length;i++){
-            pic[i] = new Image();
-            pic[i].src = "http://"+cams[i].ip+":"+cams[i].port+"/bimg?"+Date.now();
-            pic[i].index = i;
-            pic[i].onload = function(){
-              draw_an_image(this);
-            };
-          }
-        }
-
-        function draw_an_image(img){
+        function draw_image(img,index){
           var w = baseWidth;
           var h = baseHeight;
-          var W = 2592;
-          var H = 1944;
-
-          cContext.rotate(90*Math.PI/180);
           
-          if (img.index%2==0) {
-            cContext.drawImage(img, 0,0*H,W,H, 0*w,-1*h*(img.index+1),w,h);
-            cContext.drawImage(img, 0,1*H,W,H, 1*w,-1*h*(img.index+1),w,h);
+          index = +index;
+          
+          var dx = Array(0,1,4);
+          var dw = Array(0,0,4);
+          
+          cContext.rotate(90*Math.PI/180);
+          if (index%2==0) {
+            //drawImage        img   sx,sy,  sw,sh,     dx,dy,          dw,dh
+            cContext.drawImage(img,  0,0*h+dx[0],  w,h-dw[0],  0*w,-1*h*(index+1),  w,h);
+            cContext.drawImage(img,  0,1*h+dx[1],  w,h-dw[1],  1*w,-1*h*(index+1),  w,h);
             cContext.scale(-1,1);
-            cContext.drawImage(img, 0,2*H,W,H, -3*w, -1*h*(img.index+1), w, h);
+            cContext.drawImage(img,  0,2*h+dx[2],  w,h-dw[2], -3*w,-1*h*(index+1),  w,h);
             cContext.scale(-1,1);
           }else{
             cContext.scale(1,-1); //mirror is needed
-            cContext.drawImage(img, 0,0*H,W,H, 0*w,img.index*h,w,h);
-            cContext.drawImage(img, 0,1*H,W,H, 1*w,img.index*h,w,h);
+            cContext.drawImage(img,  0,0*h+dx[0],  w,h-dw[0], 0*w,index*h,w,h);
+            cContext.drawImage(img,  0,1*h+dx[1],  w,h-dw[1], 1*w,index*h,w,h);
             cContext.scale(-1,1);
-            cContext.drawImage(img, 0,2*H,W,H, -3*w,h*(img.index),w,h);
-            cContext.scale(-1,-1);
+            cContext.drawImage(img,  0,2*h+dx[2],  w,h-dw[2], -3*w,h*(index),w,h);
+            cContext.scale(-1,1);
+            cContext.scale(1,-1);
           }
-          
           cContext.rotate(-90*Math.PI/180);
         }
 
+        function append_hidden_div(index){
+          el = $("<div>",{
+            id: "div_"+index
+          }).css({
+            //position: "absolute",
+            //top: "1000px",
+            //left: (index*200)+"px",
+            display: "none"
+          });
+            
+          el.attr("index",index);
+          
+          el.on("canvas_ready",function(){
+              //can draw on main canvas
+              var cnv = $(this).find("#display")[0];
+              var index = $(this).attr("index");
+            
+              draw_image(cnv,index);
+          });
+          
+          $("body").append(el);
+        }
+        
+        function remove_hidden_div(index){
+          $("#div_"+index).off("canvas_ready");
+          $("#div_"+index).remove();
+        }
+        
     </script>
 
 </head>
-<body onload="init()">
-    <canvas id="canvas" style="background:rgba(100,200,100,0.5);"></canvas>
+<body onload="init()" style='padding:0px;margin:0px;'>
+    <canvas id="canvas" style="background:rgba(100,200,100,0.5);margin:0px;"></canvas>
 </body>
 </html>
