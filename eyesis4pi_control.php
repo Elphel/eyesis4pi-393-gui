@@ -396,9 +396,11 @@ if ($get_free_space) {
   $res_xmls = array();
   foreach($unique_cams as $cam){
     $rqstr = file_get_contents("http://{$cam['ip']}/eyesis4pi_interface.php?cmd=free_space");
+    $rqstr = strip_xml_header($rqstr);
     array_push($res_xmls,$rqstr);
+    //array_push($res_xmls,$rqstr);
   }  
-
+  
   $res_xml = implode("",$res_xmls);
   $res_xml = "<?xml version='1.0'?>\n<Document>\n$res_xml</Document>\n";
 
@@ -457,6 +459,15 @@ if ($run_status) {
     header("Pragma: no-cache\n");
     printf("%s",$res_xml);
     flush();
+}
+
+function strip_xml_header($str){
+  $patterns = array(
+    '/<\?xml(.+)\?>\n/',//xml header
+    '/\n$/'             //last new line
+  );
+  $str = preg_replace($patterns,'',$str);
+  return $str;
 }
 
 ?>
