@@ -569,7 +569,7 @@ function refresh_images_eyesis(){
   for (var i=0;i<cams.length;i++){
       remove_hidden_div(i);
       append_hidden_div(i);
-      $("#div_"+i).jp4({ip:cams[i].ip,port:cams[i].port,width:200,fast:true});
+      $("#div_"+i).jp4({ip:cams[i].ip, port:cams[i].port, width:200, fast:true, lowres:4});
   }
   
 }
