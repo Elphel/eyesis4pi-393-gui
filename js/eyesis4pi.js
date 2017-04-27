@@ -959,6 +959,18 @@ function status_message(en,msg){
   }
 }
 
+function update_interval_time(){
+
+  var tmpval = parseInt($("#input_trigger_period").val());
+  
+  if (tmpval>5000){
+    interval_time = tmpval;
+  }else{
+    interval_time = 5000;
+  }
+  
+}
+
 // no need
 function resync(){
   console.log("resync()");

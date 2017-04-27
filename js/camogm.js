@@ -19,11 +19,15 @@ function camogm_exit(){
 }
 
 function camogm_rec_start(){
+  
   console.log("camogm: begin recording");
   //camogm_cmd("mount",false);
   camogm_cmd("start",true);
-  if (!disable_intervals) intvl_camogm_status = setInterval("camogm_status(true)",5000);
-  if (!disable_intervals) intvl_hdd_free_space = setInterval("camogm_get_ssd_free_space(false)",5000);
+  
+  update_interval_time();
+  
+  if (!disable_intervals) intvl_camogm_status = setInterval("camogm_status(true)",interval_time);
+  if (!disable_intervals) intvl_hdd_free_space = setInterval("camogm_get_ssd_free_space(false)",interval_time);
 }
 
 function camogm_rec_stop(){
@@ -164,7 +168,7 @@ function camogm_parse_status(data){
       lba_current = $(camogm_states[i]).find("lba_current").text();
       lba_end     = $(camogm_states[i]).find("lba_end").text();
       
-      console.log("index: "+i+" lba_current="+lba_start+" lba_end="+lba_end);
+      //console.log("index: "+i+" lba_current="+lba_start+" lba_end="+lba_end);
       
       free_space = ((lba_end-lba_current)/1024/1024/2);
       free_space = Math.round(free_space*100)/100+"G";
