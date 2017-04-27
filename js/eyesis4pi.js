@@ -11,7 +11,7 @@ var settings_file = "settings.xml";
 
 var daemon_restart_en = true;
 
-var interval_time = 5000;
+var interval_time = 10000;
 
 var intvl_temperatures;
 var intvl_histograms;
@@ -963,10 +963,10 @@ function update_interval_time(){
 
   var tmpval = parseInt($("#input_trigger_period").val());
   
-  if (tmpval>5000){
+  if (tmpval>10000){
     interval_time = tmpval;
   }else{
-    interval_time = 5000;
+    interval_time = 10000;
   }
   
 }
