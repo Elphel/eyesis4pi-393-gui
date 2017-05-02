@@ -246,12 +246,12 @@ function tab3_init(){
   
   c += "<div style='padding:5px;'><b>Temperatures:</b></div><div id='temperatures_map'></div>";
   
-  c += "<br/><b>Recording:</b><div>";
+  c += "<br/><b>SSDs:</b><div>";
   
-  c += "<button title='set recording to file system (/mnt/sda1)' id='other_norm_rec'>Normal REC</button>";
-  c += "<button title='set recording to raw partitions (/dev/sda2)' id='other_fast_rec'>Fast REC</button>";
-  c += "<button title='reset raw partitions write pointers' id='other_reset_rec'>Reset Fast REC</button>";
-  c += "<button title='refresh raw partitions write pointers' id='other_refresh_rec'>Refresh Fast REC</button>";
+  //c += "<button title='set recording to file system (/mnt/sda1)' id='other_norm_rec'>Normal REC</button>";
+  //c += "<button title='set recording to raw partitions (/dev/sda2)' id='other_fast_rec'>Fast REC</button>";
+  c += "<button title='refresh raw partitions write pointers' id='other_refresh_rec'>Refresh</button>";
+  c += "<button title='reset raw partitions write pointers' id='other_reset_rec'>Reset</button>";
   
   c +="</div>";
 
